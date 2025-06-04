@@ -40,7 +40,7 @@ type BaseProvider = MetaMaskInpageProvider;
 
 // export const IOTA_SNAP_ORIGIN = "npm:@3mate/iota-metamask-snap";
 export const IOTA_SNAP_ORIGIN =
-  process.env.NEXT_PUBLIC_SNAP_ID || "local:http://localhost:5050";
+  "npm:iota-metamask-snap";
 export const SNAP_VERSION = "^0.0.1";
 
 export function registerIotaSnapWallet(): Wallet {

@@ -42,7 +42,7 @@ export default function Home() {
   const [signatureResult, setSignatureResult] = useState<string | null>(null);
   const [qrCodeKey, setQrCodeKey] = useState<string | null>(null);
   const [showQrCode, setShowQrCode] = useState(false);
-  const [waitingForConnection, setWaitingForConnection] = useState(false);
+
 
   // Transfer
   const [amount, setAmount] = useState<string>("");
@@ -98,7 +98,7 @@ export default function Home() {
     const handleMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === "iota-mate-wallet-connected") {
         console.log("Received connection from popup:", event.data);
-        setWaitingForConnection(false);
+
         setQrCodeKey(null);
         setShowQrCode(false);
         // You can handle the successful connection here
@@ -166,7 +166,7 @@ export default function Home() {
       const key = response.result;
       setQrCodeKey(key);
       setShowQrCode(true);
-      setWaitingForConnection(true);
+
 
       // Open the connect page in a popup
       const connectUrl = `${window.location.origin}/connect?key=${key}`;
@@ -315,16 +315,6 @@ export default function Home() {
               }
             />
 
-            <button
-              onClick={handleGenerateQrCode}
-              className="px-4 py-2 rounded-md bg-purple-500 hover:bg-purple-600 text-white disabled:opacity-50 disabled:cursor-not-allowed w-full"
-              disabled={waitingForConnection}
-            >
-              {waitingForConnection
-                ? "Waiting for Connection..."
-                : "Connect with QR Code"}
-            </button>
-
             {showQrCode && qrCodeKey && (
               <div className="bg-white p-4 rounded-md border border-gray-300 text-center">
                 <h3 className="font-bold mb-2">Scan QR Code</h3>
@@ -350,7 +340,7 @@ export default function Home() {
 
             {(connectedToSnap || connectedToMateWallet) && currentAccount && (
               <div className="flex flex-col gap-4 w-full">
-                <div className="flex flex-col gap-2 bg-gray-500 p-4 rounded-md">
+                <div className="flex flex-col gap-2 bg-gray-300 p-4 rounded-md">
                   <h3 className="font-bold mb-2">Connected Account</h3>
                   <p className="text-sm mb-2">
                     <span className="font-semibold">Wallet:</span>{" "}

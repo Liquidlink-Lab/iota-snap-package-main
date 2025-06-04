@@ -159,7 +159,7 @@ export default function Connect() {
               />
 
               {isConnected && currentAccount && (
-                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
+                <div className="bg-gray-100 dark:bg-gray-600 p-4 rounded-md">
                   <h3 className="font-bold mb-2">Connected Account</h3>
                   <p className="text-sm mb-2">
                     <span className="font-semibold">Wallet:</span>{" "}
