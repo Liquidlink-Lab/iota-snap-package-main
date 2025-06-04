@@ -267,10 +267,10 @@ export default function Home() {
         <div className="flex flex-col items-center gap-4 w-full">
           <Image
             className="dark:invert"
-            src="/next.svg"
+            src="/Iota_logo.svg"
             alt="Next.js logo"
-            width={180}
-            height={38}
+            width={280}
+            height={80}
             priority
           />
 
