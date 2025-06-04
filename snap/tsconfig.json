@@ -7,5 +7,6 @@
     "strict": true,
     "esModuleInterop": true
   },
-  "include": ["src/index.ts"]
+  "include": ["src/index.ts"],
+  "license": "Apache-2.0"
 }
