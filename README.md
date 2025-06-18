@@ -11,3 +11,9 @@ This project is licensed under the [Apache 2.0 License](./LICENSE).
 - npm or yarn install
 - Connect with MetaMask Flask
 - Manage your Iota wallet with metamask
+
+
+### Feature
+- Receive Iota
+- Send Iota
+- Sign message
