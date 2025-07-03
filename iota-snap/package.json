@@ -1,6 +1,6 @@
 {
-  "name": "snap",
-  "version": "1.0.0",
+  "name": "iota-snap-for-metamask",
+  "version": "1.2.5",
   "description": "",
   "license": "ISC",
   "author": "",
@@ -14,10 +14,12 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@iota/dapp-kit": "^0.4.4",
-    "@iota/iota-sdk": "^1.0.1",
     "@iota/wallet-standard": "^0.2.8",
     "@metamask/detect-provider": "^2.0.0",
-    "@metamask/providers": "^22.0.1"
+    "@metamask/providers": "^22.1.0"
+  },
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
   }
 }
