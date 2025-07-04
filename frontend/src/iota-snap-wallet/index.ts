@@ -43,6 +43,7 @@ export const IOTA_SNAP_ORIGIN =  "npm:iota-metamask-snap";
 export const SNAP_VERSION = "^0.0.1";
 
 export function registerIotaSnapWallet(): Wallet {
+  console.log("registerIotaSnapWallet");
   const wallets = getWallets();
   for (const wallet of wallets.get()) {
     if (wallet.name === IotaSnapWallet.NAME) {

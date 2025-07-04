@@ -1,25 +1,43 @@
 {
   "name": "iota-snap-for-metamask",
-  "version": "1.2.5",
-  "description": "",
+  "version": "1.3.1",
+  "description": "A MetaMask Snap integration for IOTA Wallet Standard",
   "license": "ISC",
-  "author": "",
+  "author": "liquidlink.io@gmail.com",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@iota/iota-sdk": "^1.4.0",
     "@iota/wallet-standard": "^0.2.8",
     "@metamask/detect-provider": "^2.0.0",
     "@metamask/providers": "^22.1.0"
   },
-  "exports": {
-    "import": "./dist/index.js",
-    "require": "./dist/index.cjs"
+  "sideEffects": false,
+  "keywords": [
+    "iota",
+    "metamask",
+    "snap",
+    "wallet",
+    "blockchain"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Liquidlink-Lab/iota-snap-package-main"
   }
 }

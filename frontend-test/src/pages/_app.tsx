@@ -6,13 +6,14 @@ import {
   createNetworkConfig,
   IotaClientProvider,
 } from "@iota/dapp-kit";
-import { registerIotaSnapWallet } from "iota-snap-for-metamask";
+//import { registerIotaSnapWallet } from "iota-snap-for-metamask";
+import { registerIotaSnapWallet } from "@/iota-snap-wallet";
 import { getFullnodeUrl } from "@iota/iota-sdk/client";
 import "@iota/dapp-kit/dist/index.css";
 import { Toaster } from "sonner";
 
 // Register the Iota Snap wallet
-registerIotaSnapWallet();
+console.log(registerIotaSnapWallet());
 
 // Create a network config for Iota
 const { networkConfig } = createNetworkConfig({

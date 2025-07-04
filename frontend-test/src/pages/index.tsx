@@ -10,7 +10,7 @@ import {
   useIotaClientQuery,
   useIotaClientContext,
 } from "@iota/dapp-kit";
-import { metaMaskAvailable } from "@/iota-snap-wallet";
+import { metaMaskAvailable } from "iota-snap-for-metamask";
 import { Transaction } from "@iota/iota-sdk/transactions";
 import { IOTA_DECIMALS } from "@iota/iota-sdk/utils";
 import {
