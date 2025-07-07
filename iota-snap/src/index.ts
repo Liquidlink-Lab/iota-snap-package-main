@@ -17,6 +17,7 @@ import {
   Wallet,
   WalletAccount,
   getWallets,
+  Wallets,
 } from "@iota/wallet-standard";
 import { MetaMaskInpageProvider } from "@metamask/providers";
 import detectEthereumProvider from "@metamask/detect-provider";
@@ -39,24 +40,20 @@ export * from "./errors";
 type BaseProvider = MetaMaskInpageProvider;
 
 // export const IOTA_SNAP_ORIGIN = "npm:@3mate/iota-metamask-snap";
-export const IOTA_SNAP_ORIGIN =
-  "npm:iota-metamask-snap";
+export const IOTA_SNAP_ORIGIN = "npm:iota-metamask-snap";
 export const SNAP_VERSION = "^0.0.1";
 
-export function registerIotaSnapWallet(): Wallet {
-
+export function registerIotaSnapWallet(wallets: Wallets) {
   console.log("registerIotaSnapWallet");
-  const wallets = getWallets();
+
   for (const wallet of wallets.get()) {
     if (wallet.name === IotaSnapWallet.NAME) {
       console.warn("IotaSnapWallet already registered");
-      return wallet;
+      return;
     }
   }
 
-  const wallet = new IotaSnapWallet();
-  wallets.register(wallet as unknown as Wallet);
-  return wallet;
+  wallets.register(new IotaSnapWallet());
 }
 
 export async function getAccounts(
@@ -418,4 +415,3 @@ export class IotaSnapWallet implements Wallet {
     return signAndExecuteTransaction(provider, transactionInput);
   };
 }
-
