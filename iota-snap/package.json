@@ -5,21 +5,29 @@
   "license": "ISC",
   "author": "liquidlink.io@gmail.com",
   "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "import": "./dist/index.js",
-    "require": "./dist/index.cjs"
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.cjs"
+      }
+    }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsup src/index.ts --dts --format esm,cjs --out-dir dist",
     "clean": "rm -rf dist",
     "prepare": "npm run build"
   },
   "devDependencies": {
+    "tsup": "^8.5.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {
