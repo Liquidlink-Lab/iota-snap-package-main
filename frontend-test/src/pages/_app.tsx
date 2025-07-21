@@ -13,7 +13,7 @@ import "@iota/dapp-kit/dist/index.css";
 import { Toaster } from "sonner";
 
 // Register the Iota Snap wallet
-console.log(registerIotaSnapWallet());
+// console.log(registerIotaSnapWallet());
 
 // Create a network config for Iota
 const { networkConfig } = createNetworkConfig({

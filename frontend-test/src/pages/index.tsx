@@ -10,7 +10,10 @@ import {
   useIotaClientQuery,
   useIotaClientContext,
 } from "@iota/dapp-kit";
-import { metaMaskAvailable } from "iota-snap-for-metamask";
+import {
+  metaMaskAvailable,
+  registerIotaSnapWallet,
+} from "@liquidlink-lab/iota-snap-for-metamask";
 import { Transaction } from "@iota/iota-sdk/transactions";
 import { IOTA_DECIMALS } from "@iota/iota-sdk/utils";
 import {
@@ -25,6 +28,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { getWallets } from "@iota/wallet-standard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +46,6 @@ export default function Home() {
   const [signatureResult, setSignatureResult] = useState<string | null>(null);
   const [qrCodeKey, setQrCodeKey] = useState<string | null>(null);
   const [showQrCode, setShowQrCode] = useState(false);
-
 
   // Transfer
   const [amount, setAmount] = useState<string>("");
@@ -120,6 +123,14 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    const wallets = getWallets();
+
+    // registerWallet()
+    // 等修改好新版就能用
+    registerIotaSnapWallet(wallets);
+  }, []);
+
   const connectedToSnap =
     isConnected && currentWallet?.name === "Iota MetaMask Snap";
 
@@ -166,7 +177,6 @@ export default function Home() {
       const key = response.result;
       setQrCodeKey(key);
       setShowQrCode(true);
-
 
       // Open the connect page in a popup
       const connectUrl = `${window.location.origin}/connect?key=${key}`;
