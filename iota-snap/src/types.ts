@@ -1,7 +1,4 @@
-import {
-  ExecuteTransactionRequestType,
-  IotaTransactionBlockResponseOptions,
-} from "@iota/iota-sdk/client";
+import { IotaTransactionBlockResponseOptions } from "@iota/iota-sdk/client";
 import { Transaction } from "@iota/iota-sdk/transactions";
 import { fromB64, toB64 } from "@iota/iota-sdk/utils";
 import {

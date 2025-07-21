@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@iota/iota-sdk": "^1.4.0",
-    "@iota/wallet-standard": "^0.2.8",
+    "@iota/wallet-standard": "^0.2.12",
     "@metamask/detect-provider": "^2.0.0",
     "@metamask/providers": "^22.1.0"
   },
