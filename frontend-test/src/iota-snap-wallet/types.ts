@@ -1,16 +1,16 @@
 import {
   ExecuteTransactionRequestType,
   IotaTransactionBlockResponseOptions,
-} from "@iota/iota-sdk/client";
-import { Transaction } from "@iota/iota-sdk/transactions";
-import { fromB64, toB64 } from "@iota/iota-sdk/utils";
+} from '@iota/iota-sdk/client';
+import { Transaction } from '@iota/iota-sdk/transactions';
+import { fromB64, toB64 } from '@iota/iota-sdk/utils';
 import {
   IotaSignAndExecuteTransactionInput,
   IotaSignPersonalMessageInput,
   IotaSignTransactionInput,
   WalletAccount,
   WalletIcon,
-} from "@iota/wallet-standard";
+} from '@iota/wallet-standard';
 
 /**
  * Passing in objects directly to the Snap sometimes doesn't work correctly so we need to serialize to primitive values
@@ -29,7 +29,7 @@ export interface SerializedWalletAccount {
 }
 
 export function serializeWalletAccount(
-  account: WalletAccount
+  account: WalletAccount,
 ): SerializedWalletAccount {
   return {
     address: account.address,
@@ -42,14 +42,14 @@ export function serializeWalletAccount(
 }
 
 export function deserializeWalletAccount(
-  account: SerializedWalletAccount
+  account: SerializedWalletAccount,
 ): WalletAccount {
   return {
     address: account.address,
     publicKey: fromB64(account.publicKey),
     chains: account.chains.map((chain) => chain as `${string}:${string}`),
     features: account.features.map(
-      (feature) => feature as `${string}:${string}`
+      (feature) => feature as `${string}:${string}`,
     ),
     label: account.label,
     icon: account.icon as WalletIcon,
@@ -64,7 +64,7 @@ export interface SerializedIotaSignMessageInput {
 }
 
 export function serializeIotaSignMessageInput(
-  input: IotaSignPersonalMessageInput
+  input: IotaSignPersonalMessageInput,
 ): SerializedIotaSignMessageInput {
   return {
     message: toB64(input.message),
@@ -73,7 +73,7 @@ export function serializeIotaSignMessageInput(
 }
 
 export function deserializeIotaSignMessageInput(
-  input: SerializedIotaSignMessageInput
+  input: SerializedIotaSignMessageInput,
 ): IotaSignPersonalMessageInput {
   return {
     message: fromB64(input.message),
@@ -90,7 +90,7 @@ export interface SerializedIotaSignTransactionBlockInput {
 }
 
 export async function serializeIotaSignTransactionBlockInput(
-  input: IotaSignTransactionInput
+  input: IotaSignTransactionInput,
 ): Promise<SerializedIotaSignTransactionBlockInput> {
   return {
     transaction: await input.transaction.toJSON(),
@@ -100,7 +100,7 @@ export async function serializeIotaSignTransactionBlockInput(
 }
 
 export function deserializeIotaSignTransactionBlockInput(
-  input: SerializedIotaSignTransactionBlockInput
+  input: SerializedIotaSignTransactionBlockInput,
 ): IotaSignTransactionInput {
   return {
     transaction: Transaction.from(input.transaction) as any,
@@ -119,7 +119,7 @@ export interface SerializedIotaSignAndExecuteTransactionBlockInput {
 }
 
 export async function serializeIotaSignAndExecuteTransactionBlockInput(
-  input: IotaSignAndExecuteTransactionInput
+  input: IotaSignAndExecuteTransactionInput,
 ): Promise<SerializedIotaSignAndExecuteTransactionBlockInput> {
   return {
     transaction: await input.transaction.toJSON(),
@@ -130,7 +130,7 @@ export async function serializeIotaSignAndExecuteTransactionBlockInput(
 }
 
 export function deserializeIotaSignAndExecuteTransactionBlockInput(
-  input: SerializedIotaSignAndExecuteTransactionBlockInput
+  input: SerializedIotaSignAndExecuteTransactionBlockInput,
 ): IotaSignAndExecuteTransactionInput {
   return {
     ...input,
@@ -152,6 +152,6 @@ export interface StoredState {
 /* ======== SerializedAdminSetFullnodeUrl ======== */
 
 export interface SerializedAdminSetFullnodeUrl {
-  network: "mainnet" | "testnet" | "devnet" | "localnet";
+  network: 'mainnet' | 'testnet' | 'devnet' | 'localnet';
   url: string;
 }

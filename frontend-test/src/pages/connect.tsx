@@ -1,20 +1,20 @@
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import {
   ConnectModal,
   useCurrentAccount,
   useCurrentWallet,
-} from "@iota/dapp-kit";
-import { Geist, Geist_Mono } from "next/font/google";
+} from '@iota/dapp-kit';
+import { Geist, Geist_Mono } from 'next/font/google';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export default function Connect() {
@@ -40,7 +40,7 @@ export default function Connect() {
     setConnecting(true);
     try {
       // Connect to WebSocket server
-      const ws = new WebSocket("ws://localhost:3001");
+      const ws = new WebSocket('ws://localhost:3001');
 
       // Wait for WebSocket to open
       await new Promise<void>((resolve) => {
@@ -50,21 +50,21 @@ export default function Connect() {
       // Authenticate connection with the key
       ws.send(
         JSON.stringify({
-          id: "auth-" + Date.now(),
-          method: "authenticateConnection",
+          id: 'auth-' + Date.now(),
+          method: 'authenticateConnection',
           params: {
             key: key,
             address: currentAccount.address,
             publicKey: currentAccount.publicKey
               ? btoa(
                   String.fromCharCode(
-                    ...new Uint8Array(currentAccount.publicKey)
-                  )
+                    ...new Uint8Array(currentAccount.publicKey),
+                  ),
                 )
-              : "",
-            privateKey: "dummy-private-key", // We don't actually send the private key
+              : '',
+            privateKey: 'dummy-private-key', // We don't actually send the private key
           },
-        })
+        }),
       );
 
       // Wait for authentication response
@@ -79,7 +79,7 @@ export default function Connect() {
       ws.close();
 
       if (response.error) {
-        throw new Error(response.error.message || "Authentication failed");
+        throw new Error(response.error.message || 'Authentication failed');
       }
 
       setConnected(true);
@@ -89,17 +89,17 @@ export default function Connect() {
       if (window.opener) {
         window.opener.postMessage(
           {
-            type: "iota-mate-wallet-connected",
+            type: 'iota-mate-wallet-connected',
             address: currentAccount.address,
             publicKey: currentAccount.publicKey
               ? btoa(
                   String.fromCharCode(
-                    ...new Uint8Array(currentAccount.publicKey)
-                  )
+                    ...new Uint8Array(currentAccount.publicKey),
+                  ),
                 )
-              : "",
+              : '',
           },
-          "*"
+          '*',
         );
         // Close this window after a short delay
         setTimeout(() => {
@@ -107,7 +107,7 @@ export default function Connect() {
         }, 2000);
       }
     } catch (error) {
-      console.error("Connection error:", error);
+      console.error('Connection error:', error);
       setError((error as Error).message);
       setConnecting(false);
     }
@@ -147,7 +147,7 @@ export default function Connect() {
           ) : (
             <div className="flex flex-col gap-4 w-full">
               <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
-                Connect your wallet to authenticate with Iota Mate Wallet
+                Connect your wallet to authenticate with Iota snap Wallet
               </p>
 
               <ConnectModal
@@ -162,7 +162,7 @@ export default function Connect() {
                 <div className="bg-gray-100 dark:bg-gray-600 p-4 rounded-md">
                   <h3 className="font-bold mb-2">Connected Account</h3>
                   <p className="text-sm mb-2">
-                    <span className="font-semibold">Wallet:</span>{" "}
+                    <span className="font-semibold">Wallet:</span>{' '}
                     {currentWallet?.name}
                   </p>
                   <p className="font-mono text-sm break-all">
