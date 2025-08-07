@@ -40,8 +40,9 @@ export * from "./errors";
 type BaseProvider = MetaMaskInpageProvider;
 
 // export const IOTA_SNAP_ORIGIN = "npm:@3mate/iota-metamask-snap";
+// export const IOTA_SNAP_ORIGIN = "local:http://localhost:5050";
 export const IOTA_SNAP_ORIGIN = "npm:@liquidlink-lab/iota-metamask-snap";
-export const SNAP_VERSION = "^0.0.3";
+export const SNAP_VERSION = "^0.0.6";
 
 export function registerIotaSnapWallet(wallets: Wallets) {
   console.log("registerIotaSnapWallet");
