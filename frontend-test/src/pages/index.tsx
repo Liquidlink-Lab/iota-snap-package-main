@@ -54,7 +54,6 @@ export default function Home() {
   const [amount, setAmount] = useState<string>('');
   const [recipient, setRecipient] = useState<string>('');
   const [isTransferring, setIsTransferring] = useState<boolean>(false);
-  const [transferInfo, setTransferInfo] = useState<string>('');
   const [txHash, setTxHash] = useState<string | null>(null);
   type CoinItem = {
     coinType: string;
@@ -62,8 +61,9 @@ export default function Home() {
   };
 
   const [coinItems, setCoinItems] = useState<CoinItem[]>([]);
-  const [coinType, setCoinType] = useState<(string | undefined)[]>([]);
+  const [inputCoinType, setCoinType] = useState<(string)[]>([]);
   const [coinName, setCoinName] = useState<(string | undefined)[]>([]);
+  const [coinValue, setCoinValue] = useState<(string | undefined)[]>([]);
   const popupRef = useRef<Window | null>(null);
 
   const { isConnected, currentWallet } = useCurrentWallet();
@@ -73,6 +73,8 @@ export default function Home() {
     useSignAndExecuteTransaction();
 
   const ctx = useIotaClientContext();
+  const owner = currentAccount?.address;
+
 
   // console.log("Current Account", currentAccount);
   //console.log('Context', ctx);
@@ -89,14 +91,27 @@ export default function Home() {
     },
   );
 
-  const tokenValue = async function getBalance() {
+  function formatUnits(amount: string) {
+    const decimals = 9
+    const s = amount.padStart(decimals + 1, '0'); // 補 0 保位數
+    const intPart = s.slice(0, -decimals);        // 整數部分
+    let fracPart = s.slice(-decimals).replace(/0+$/, ''); // 小數部分去尾零
+    return fracPart ? `${intPart}.${fracPart}` : intPart;
+  }
+
+  async function getBalance(tokenTypeInput:string) {
+    console.log(currentAccount?.address)
+    if(currentAccount == null)return
+
     const balance = await client.getCoins({
       owner:
-        '0x65be91d6e3178f1cf305fb83a42792f507dbd28465f5aec3ca5381d6d735d99b',
+        currentAccount?.address,
       coinType:
-        '0xdd051fe12344d3c1ec76766d9b6cda2274c45f316fd9e79234f37ba2722ca213::cert::CERT',
+        tokenTypeInput,
     });
-    //console.log("Iota Balance: ",balance);
+    const val = formatUnits(balance.data[0].balance)
+    console.log('balance',val)
+    return val
   };
 
   async function getObjects() {
@@ -123,13 +138,15 @@ export default function Home() {
       })
       .filter((x): x is CoinItem => x !== null); // 型別守衛，縮窄為 CoinItem
 
-    setCoinType(coins.map((c) => c.coinType)); // coinType 清單
     console.log('coin:', coins);
+    setCoinType(coins.map((c) => c.coinType)); // coinType 清單
+
+
 
     const metas = await Promise.all(
       coins.map(async ({ coinType }) => {
         const meta = await client.getCoinMetadata({ coinType });
-        return meta?.symbol; // 可能 null，所以用 ?
+        return meta?.symbol;
       }),
     );
 
@@ -139,8 +156,22 @@ export default function Home() {
     setCoinItems(coins);
   }
 
+  useEffect(()=>{
+
+    async function getVal() {
+      console.log('inputCoinType',inputCoinType)
+      if(inputCoinType == undefined)return
+
+      const results = await Promise.all(inputCoinType.map(t => getBalance(t)));
+      console.log('results:',results)
+      setCoinValue(results);
+    }
+
+    getVal()
+
+  },[owner])
+
   useEffect(() => {
-    tokenValue();
     getObjects();
   }, []);
 
@@ -512,23 +543,16 @@ export default function Home() {
 
                   {coinItems.map((item, index) => {
                     const coinInputType =
-                      coinType[index] !== undefined ? coinType[index] : 'Iota';
+                      inputCoinType[index] !== undefined ? inputCoinType[index] : 'Iota';
 
                     return (
                       <div>
                         <p className="text-xl" key={index}>
                           {coinName[index]}
                         </p>
-                        <p className="text-sm"> Balance: {item.balance}</p>
+                        <p className="text-sm"> Balance: {coinValue[index]}</p>
 
-                        {/* <button
-                          onClick={() =>
-                            selectToken(coinInputType)
-                          }
-                          className="flex-1 px-2 py-1 rounded-md bg-blue-500 hover:bg-blue-600 text-white"
-                        >
-                          Send Token
-                        </button> */}
+
                         <Dialog
                           onOpenChange={(open) => {
                             if (!open) {
