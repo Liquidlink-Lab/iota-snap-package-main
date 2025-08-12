@@ -74,6 +74,7 @@ export default function Home() {
   const [coinValue, setCoinValue] = useState<(string | undefined)[]>([]);
   const [stakingAmount, setStakingAmount] = useState<string>('');
   const [nftList, setNftList] = useState<(string | undefined)[]>([]);
+  const [nftRecipient, setNftRecipient] = useState<string>('');
   const popupRef = useRef<Window | null>(null);
 
   const { isConnected, currentWallet } = useCurrentWallet();
@@ -262,8 +263,7 @@ export default function Home() {
   useEffect(() => {
     const wallets = getWallets();
     console.log('wallets', wallets);
-    // registerWallet()
-    // 等修改好新版就能用
+
     registerIotaSnapWallet(wallets);
   }, []);
 
@@ -341,7 +341,10 @@ export default function Home() {
   };
 
   const testSignAndSednTransaction = async (tokenType: string) => {
-    if (!(connectedToSnap || connectedToMateWallet) || !currentAccount) {
+    if (
+      !(connectedToSnap || connectedToMateWallet || currentAccount) ||
+      !currentAccount
+    ) {
       throw new Error('No wallet connected');
     }
     setIsTransferring(true);
@@ -399,7 +402,15 @@ export default function Home() {
               console.log('executed transaction', result);
               setTxHash(result.digest);
               toast.success(
-                `Transaction executed: https://explorer.iota.org/txblock/${result.digest}?network=testnet`,
+                <a
+                  href={`https://explorer.iota.org/txblock/${result.digest}?network=testnet`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'black', textDecoration: 'underline' }}
+                >
+                  Transaction executed successfully,
+                  {`https://explorer.iota.org/txblock/${result.digest}?network=testnet`}
+                </a>,
               );
             },
             onError: (error) => {
@@ -453,7 +464,15 @@ export default function Home() {
           onSuccess: (result) => {
             console.log('executed transaction', result);
             toast.success(
-              `Transaction executed: https://explorer.iota.org/txblock/${result.digest}?network=testnet`,
+              <a
+                href={`https://explorer.iota.org/txblock/${result.digest}?network=testnet`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'black', textDecoration: 'underline' }}
+              >
+                Transaction executed successfully,
+                {`https://explorer.iota.org/txblock/${result.digest}?network=testnet`}
+              </a>,
             );
           },
 
@@ -492,6 +511,45 @@ export default function Home() {
         fields.url ||
         fields.title,
     );
+  }
+
+  async function sendNft(nftObjectId: string) {
+    if (!nftObjectId || !nftRecipient) throw new Error('missing params');
+
+    const tx = new Transaction();
+    tx.transferObjects([tx.object(nftObjectId)], nftRecipient);
+
+    try {
+      signAndExecuteTransaction(
+        {
+          transaction: tx as any,
+          chain: 'iota:testnet',
+        },
+        {
+          onSuccess: (result) => {
+            console.log('executed transaction', result);
+            toast.success(
+              <a
+                href={`https://explorer.iota.org/txblock/${result.digest}?network=testnet`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'black', textDecoration: 'underline' }}
+              >
+                Transaction executed successfully,
+                {`https://explorer.iota.org/txblock/${result.digest}?network=testnet`}
+              </a>,
+            );
+          },
+
+          onError: (error) => {
+            console.error('error', error);
+            toast.error('Transaction failed');
+          },
+        },
+      );
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   return (
@@ -789,9 +847,8 @@ export default function Home() {
                   <div className="flex flex-col gap-2 bg-gray-200 p-4 rounded-md">
                     <h3 className="font-bold text-2xl mb-2">NFT :</h3>
 
-                    {nftList.map((item, index) => {
+                    {nftList.map((item: any, index) => {
                       const img = item?.image;
-                      console.log('img', img);
                       return (
                         <div>
                           <div>
@@ -801,14 +858,58 @@ export default function Home() {
                               height={50}
                               alt="avatar"
                             />
-
-                            <button
-                              onClick={handleSignMessage}
-                              className="mt-2 px-2 py-1 rounded-md bg-blue-500 hover:bg-blue-600 text-white"
-                            >
-                              Send
-                            </button>
+                            <div>Name : {item.name}</div>
+                            <div>ObjectId : {item.objectId}</div>
                           </div>
+
+                          <Dialog
+                            onOpenChange={(open) => {
+                              if (!open) {
+                                setTxHash(null);
+                              }
+                            }}
+                          >
+                            <DialogTrigger className="w-[160px] flex-1 px-4 py-2 rounded-md bg-blue-400 hover:bg-blue-400 text-white">
+                              Send
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Transfer your NFT</DialogTitle>
+                                <Input
+                                  className="my-5"
+                                  type="text"
+                                  placeholder="Recipient"
+                                  value={nftRecipient}
+                                  onChange={(e) =>
+                                    setNftRecipient(e.target.value)
+                                  }
+                                />
+                                <DialogFooter className="w-full flex justify-between">
+                                  <div className="flex-3">
+                                    {txHash && (
+                                      <a
+                                        href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-500 hover:text-blue-600"
+                                      >
+                                        Tx Result
+                                      </a>
+                                    )}
+                                  </div>
+                                  <Button
+                                    className="flex-1"
+                                    onClick={() => sendNft(item.objectId)}
+                                    disabled={isTransferring}
+                                  >
+                                    {isTransferring
+                                      ? 'Transferring...'
+                                      : 'Transfer'}
+                                  </Button>
+                                </DialogFooter>
+                              </DialogHeader>
+                            </DialogContent>
+                          </Dialog>
 
                           <br />
                         </div>
