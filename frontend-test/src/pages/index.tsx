@@ -177,8 +177,8 @@ export default function Home() {
 
       for (const obj of page.data) {
         if (!isProbablyNFT(obj)) continue;
-
-        const fields = obj.data?.content?.fields ?? {};
+        const content = obj.data?.content;
+        const fields  = content?.dataType === 'moveObject' ? (content.fields as any) : {};
         const display = obj.data?.display?.data ?? {};
         nfts.push({
           objectId: obj.data!.objectId,

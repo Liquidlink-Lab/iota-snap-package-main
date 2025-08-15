@@ -395,10 +395,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@liquidlink-lab/iota-snap-for-metamask@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@liquidlink-lab/iota-snap-for-metamask/-/iota-snap-for-metamask-1.5.0.tgz#5abbe11f0cb215a4322e94e3b8eea0d01e67cd63"
-  integrity sha512-c+J9P1B3vFGDqeHApwabn1aenNelTj8KD7nfb881GD5PawjulcfAlRCEDb0pc8AlVs/87BRiqJBiE74gD3Y/2A==
+"@liquidlink-lab/iota-snap-for-metamask@^1.6.1":
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/@liquidlink-lab/iota-snap-for-metamask/-/iota-snap-for-metamask-1.6.1.tgz#73cf547bb5be4464479714e446eac3c28c044319"
+  integrity sha512-ZRH8HMlahPNVXipDHBaAVoblfZzba4apDBJp3y595ownCaq4Vf+Rk7KzXWYTcQkyw1PzWadtdxNt5ocBLvMZDA==
   dependencies:
     "@iota/iota-sdk" "^1.4.0"
     "@iota/wallet-standard" "^0.2.12"
