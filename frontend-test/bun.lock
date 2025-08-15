@@ -7,7 +7,7 @@
         "@iota/dapp-kit": "^0.4.4",
         "@iota/iota-sdk": "^1.0.1",
         "@iota/wallet-standard": "^0.2.8",
-        "@liquidlink-lab/iota-snap-for-metamask": "^1.6.1",
+        "@liquidlink-lab/iota-snap-for-metamask": "^1.6.2",
         "@metamask/detect-provider": "^2.0.0",
         "@metamask/providers": "^22.0.1",
         "@radix-ui/react-dialog": "^1.1.13",
@@ -143,7 +143,7 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.29", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-uw6guiW/gcAGPDhLmd77/6lW8QLeiV5RUTsAX46Db6oLhGaVj4lhnPwb184s1bkc8kdVg/+h988dro8GRDpmYQ=="],
 
-    "@liquidlink-lab/iota-snap-for-metamask": ["@liquidlink-lab/iota-snap-for-metamask@1.6.1", "", { "dependencies": { "@iota/iota-sdk": "^1.4.0", "@iota/wallet-standard": "^0.2.12", "@metamask/detect-provider": "^2.0.0", "@metamask/providers": "^22.1.0" } }, "sha512-ZRH8HMlahPNVXipDHBaAVoblfZzba4apDBJp3y595ownCaq4Vf+Rk7KzXWYTcQkyw1PzWadtdxNt5ocBLvMZDA=="],
+    "@liquidlink-lab/iota-snap-for-metamask": ["@liquidlink-lab/iota-snap-for-metamask@1.6.2", "", { "dependencies": { "@iota/iota-sdk": "^1.4.0", "@iota/wallet-standard": "^0.2.12", "@metamask/detect-provider": "^2.0.0", "@metamask/providers": "^22.1.0" } }, "sha512-lwI9TEkNi6ud7KOTTvU3bigzXKcUbzHzKBVIGu/Ixj0XWhaO/VF025teluzMm2zGEOz2vRloVp6ne+4bCih/DQ=="],
 
     "@metamask/detect-provider": ["@metamask/detect-provider@2.0.0", "", {}, "sha512-sFpN+TX13E9fdBDh9lvQeZdJn4qYoRb/6QF2oZZK/Pn559IhCFacPMU1rMuqyXoFQF3JSJfii2l98B87QDPeCQ=="],
 
