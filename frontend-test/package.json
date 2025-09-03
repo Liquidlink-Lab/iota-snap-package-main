@@ -12,7 +12,7 @@
     "@iota/dapp-kit": "^0.4.4",
     "@iota/iota-sdk": "^1.0.1",
     "@iota/wallet-standard": "^0.2.8",
-    "@liquidlink-lab/iota-snap-for-metamask": "^1.6.2",
+    "@liquidlink-lab/iota-snap-for-metamask": "^1.6.3",
     "@metamask/detect-provider": "^2.0.0",
     "@metamask/providers": "^22.0.1",
     "@radix-ui/react-dialog": "^1.1.13",
