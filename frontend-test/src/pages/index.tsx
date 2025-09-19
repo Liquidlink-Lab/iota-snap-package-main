@@ -39,6 +39,21 @@ import {
   CERT_TYPE,
 } from '@/lib/config';
 import { ThemeToggle } from '@/components/theme-toggle';
+import type { Metadata } from 'next';
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+
+import { Wallet, Copy, ExternalLink } from 'lucide-react';
+
+import { BalanceCard } from "@/components/balance-card"
+import { QuickActions } from "@/components/quick-actions"
+import { TransactionHistory } from "@/components/transaction-history"
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -53,6 +68,12 @@ const geistMono = Geist_Mono({
 const client = new IotaClient({
   url: getFullnodeUrl('testnet'), // 可改成 'mainnet' 或 'testnet'
 });
+
+export const metadata: Metadata = {
+  title: 'IOTA Wallet - Secure Web3 Wallet',
+  description: 'Connect to IOTA network with our secure Web3 wallet interface',
+  generator: 'v0.app',
+};
 
 export default function Home() {
   const [error, setError] = useState<string | undefined>(undefined);
@@ -179,7 +200,8 @@ export default function Home() {
       for (const obj of page.data) {
         if (!isProbablyNFT(obj)) continue;
         const content = obj.data?.content;
-        const fields  = content?.dataType === 'moveObject' ? (content.fields as any) : {};
+        const fields =
+          content?.dataType === 'moveObject' ? (content.fields as any) : {};
         const display = obj.data?.display?.data ?? {};
         nfts.push({
           objectId: obj.data!.objectId,
@@ -557,7 +579,7 @@ export default function Home() {
     <div
       className={`${geistSans.className} ${geistMono.className} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
     >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center w-full max-w-3xl">
+      <main className="flex flex-col gap-[32px] row-start-2 items-center w-full max-w-4xl">
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="flex w-full justify-end">
             <ThemeToggle />
@@ -571,12 +593,10 @@ export default function Home() {
             priority
           />
 
-          <h1 className="text-3xl font-bold mt-8 mb-4">
-            Iota Wallet Demo Example
-          </h1>
-          <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
+          <h1 className="text-3xl font-bold mt-8 mb-4">Iota Snap Wallet</h1>
+          {/* <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
             Connect to either Iota MetaMask Wallet
-          </p>
+          </p> */}
 
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 w-full">
@@ -604,341 +624,412 @@ export default function Home() {
           )}
 
           <div className="flex flex-col gap-4 w-full">
-            {!isConnected ? (
-              <ConnectModal
-                trigger={
-                  <button className="px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed w-full">
-                    Connect Wallet
-                  </button>
-                }
-              />
-            ) : (
-              <></>
+            {!isConnected && (
+              <Card className="text-center border-border/50">
+                <CardHeader className="pb-4">
+                  <div className="mx-auto p-4 rounded-full bg-primary/10 w-fit">
+                    <Wallet className="h-8 w-8 text-primary" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold font-[var(--font-dm-sans)]">
+                    Connect Your Wallet
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Connect to IOTA Snap using MetaMask Wallet
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ConnectModal
+                    trigger={
+                      <Button className="w-full max-w-sm mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-[var(--font-dm-sans)] font-medium">
+                        <Wallet className="mr-2 h-5 w-5" />
+                        Connect Wallet
+                      </Button>
+                    }
+                  />
+                </CardContent>
+              </Card>
             )}
 
             {(connectedToSnap || connectedToMateWallet || currentAccount) &&
               currentAccount && (
-                <div className="flex flex-col gap-4 w-full">
-                  <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
-                    <h3 className="font-bold mb-2">Connected Account</h3>
-                    <p className="text-sm mb-2">
-                      <span className="font-semibold">Wallet:</span>{' '}
-                      {currentWallet?.name}
-                    </p>
-                    <p className="font-mono text-sm break-all">
-                      {currentAccount.address}
-                    </p>
-                    <p>
-                      Balance:{' '}
-                      {balance
-                        ? Number(balance.totalBalance) / 10 ** IOTA_DECIMALS
-                        : 0}{' '}
-                      IOTA
-                    </p>
-                    <p>Network: {ctx.network}</p>
-                  </div>
 
-                  <div className="w-full flex gap-3">
-                    <button
-                      onClick={handleSignMessage}
-                      className="flex-1 px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white"
-                    >
-                      Sign Message
-                    </button>
-                    <div className="flex-1">
-                      <Dialog
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            setTxHash(null);
-                          }
-                        }}
-                      >
-                        <DialogTrigger className="w-full flex-1 px-4 py-2 rounded-md bg-blue-700 hover:bg-blue-700 text-white">
-                          Stake Iota
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Stake Iota</DialogTitle>
-                            <DialogDescription>
-                              Stake Iota and get LST Token.
-                            </DialogDescription>
-                            <Input
-                              className="my-5"
-                              type="number"
-                              placeholder="Amount"
-                              value={stakingAmount}
-                              onChange={(e) => setStakingAmount(e.target.value)}
-                            />
-                            <DialogFooter className="w-full flex justify-between">
-                              <div className="flex-3">
-                                {txHash && (
-                                  <a
-                                    href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-500 hover:text-blue-600"
-                                  >
-                                    Tx Result
-                                  </a>
-                                )}
-                              </div>
-                              <Button
-                                className="flex-1"
-                                onClick={handleIotaStake}
-                                disabled={isTransferring}
-                              >
-                                {isTransferring ? 'Stakeing...' : 'Stake'}
-                              </Button>
-                            </DialogFooter>
-                          </DialogHeader>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                    <div className="flex-1">
-                      <Dialog
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            setTxHash(null);
-                          }
-                        }}
-                      >
-                        <DialogTrigger className="w-full flex-1 px-4 py-2 rounded-md bg-blue-400 hover:bg-blue-400 text-white">
-                          Transfer
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Transfer your token</DialogTitle>
-                            <DialogDescription>
-                              This action cannot be undone. This will
-                              permanently delete your account and remove your
-                              data from our servers.
-                            </DialogDescription>
-                            <Input
-                              className="my-5"
-                              type="number"
-                              placeholder="Amount"
-                              value={amount}
-                              onChange={(e) => setAmount(e.target.value)}
-                            />
-                            <Input
-                              className="my-5"
-                              type="text"
-                              placeholder="Recipient"
-                              value={recipient}
-                              onChange={(e) => setRecipient(e.target.value)}
-                            />
-                            <DialogFooter className="w-full flex justify-between">
-                              <div className="flex-3">
-                                {txHash && (
-                                  <a
-                                    href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-500 hover:text-blue-600"
-                                  >
-                                    Tx Result
-                                  </a>
-                                )}
-                              </div>
-                              <Button
-                                className="flex-1"
-                                onClick={handleSignAndExecuteTransaction}
-                                disabled={isTransferring}
-                              >
-                                {isTransferring
-                                  ? 'Transferring...'
-                                  : 'Transfer'}
-                              </Button>
-                            </DialogFooter>
-                          </DialogHeader>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  </div>
+                // <div className="flex flex-col gap-4 w-full">
+                //   <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
+                //     <h3 className="font-bold mb-2">Connected Account</h3>
+                //     <p className="text-sm mb-2">
+                //       <span className="font-semibold">Wallet:</span>{' '}
+                //       {currentWallet?.name}
+                //     </p>
+                //     <p className="font-mono text-sm break-all">
+                //       {currentAccount.address}
+                //     </p>
+                //     <p>
+                //       Balance:{' '}
+                //       {balance
+                //         ? Number(balance.totalBalance) / 10 ** IOTA_DECIMALS
+                //         : 0}{' '}
+                //       IOTA
+                //     </p>
+                //     <p>Network: {ctx.network}</p>
+                //   </div>
 
-                  <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
-                    <h3 className="font-bold text-2xl mb-2">Other Tokens :</h3>
+                //   <div className="w-full flex gap-3">
+                //     <button
+                //       onClick={handleSignMessage}
+                //       className="flex-1 px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white"
+                //     >
+                //       Sign Message
+                //     </button>
+                //     <div className="flex-1">
+                //       <Dialog
+                //         onOpenChange={(open) => {
+                //           if (!open) {
+                //             setTxHash(null);
+                //           }
+                //         }}
+                //       >
+                //         <DialogTrigger className="w-full flex-1 px-4 py-2 rounded-md bg-blue-700 hover:bg-blue-700 text-white">
+                //           Stake Iota
+                //         </DialogTrigger>
+                //         <DialogContent>
+                //           <DialogHeader>
+                //             <DialogTitle>Stake Iota</DialogTitle>
+                //             <DialogDescription>
+                //               Stake Iota and get LST Token.
+                //             </DialogDescription>
+                //             <Input
+                //               className="my-5"
+                //               type="number"
+                //               placeholder="Amount"
+                //               value={stakingAmount}
+                //               onChange={(e) => setStakingAmount(e.target.value)}
+                //             />
+                //             <DialogFooter className="w-full flex justify-between">
+                //               <div className="flex-3">
+                //                 {txHash && (
+                //                   <a
+                //                     href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
+                //                     target="_blank"
+                //                     rel="noopener noreferrer"
+                //                     className="text-blue-500 hover:text-blue-600"
+                //                   >
+                //                     Tx Result
+                //                   </a>
+                //                 )}
+                //               </div>
+                //               <Button
+                //                 className="flex-1"
+                //                 onClick={handleIotaStake}
+                //                 disabled={isTransferring}
+                //               >
+                //                 {isTransferring ? 'Stakeing...' : 'Stake'}
+                //               </Button>
+                //             </DialogFooter>
+                //           </DialogHeader>
+                //         </DialogContent>
+                //       </Dialog>
+                //     </div>
+                //     <div className="flex-1">
+                //       <Dialog
+                //         onOpenChange={(open) => {
+                //           if (!open) {
+                //             setTxHash(null);
+                //           }
+                //         }}
+                //       >
+                //         <DialogTrigger className="w-full flex-1 px-4 py-2 rounded-md bg-blue-400 hover:bg-blue-400 text-white">
+                //           Transfer
+                //         </DialogTrigger>
+                //         <DialogContent>
+                //           <DialogHeader>
+                //             <DialogTitle>Transfer your token</DialogTitle>
+                //             <DialogDescription>
+                //               This action cannot be undone. This will
+                //               permanently delete your account and remove your
+                //               data from our servers.
+                //             </DialogDescription>
+                //             <Input
+                //               className="my-5"
+                //               type="number"
+                //               placeholder="Amount"
+                //               value={amount}
+                //               onChange={(e) => setAmount(e.target.value)}
+                //             />
+                //             <Input
+                //               className="my-5"
+                //               type="text"
+                //               placeholder="Recipient"
+                //               value={recipient}
+                //               onChange={(e) => setRecipient(e.target.value)}
+                //             />
+                //             <DialogFooter className="w-full flex justify-between">
+                //               <div className="flex-3">
+                //                 {txHash && (
+                //                   <a
+                //                     href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
+                //                     target="_blank"
+                //                     rel="noopener noreferrer"
+                //                     className="text-blue-500 hover:text-blue-600"
+                //                   >
+                //                     Tx Result
+                //                   </a>
+                //                 )}
+                //               </div>
+                //               <Button
+                //                 className="flex-1"
+                //                 onClick={handleSignAndExecuteTransaction}
+                //                 disabled={isTransferring}
+                //               >
+                //                 {isTransferring
+                //                   ? 'Transferring...'
+                //                   : 'Transfer'}
+                //               </Button>
+                //             </DialogFooter>
+                //           </DialogHeader>
+                //         </DialogContent>
+                //       </Dialog>
+                //     </div>
+                //   </div>
 
-                    {coinItems.map((item, index) => {
-                      const coinInputType =
-                        inputCoinType[index] !== undefined
-                          ? inputCoinType[index]
-                          : 'Iota';
+                //   <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
+                //     <h3 className="font-bold text-2xl mb-2">Other Tokens :</h3>
 
-                      return (
-                        <div>
-                          <p className="text-xl" key={index}>
-                            {coinName[index]}
-                          </p>
-                          <p className="text-sm">
-                            {' '}
-                            Balance: {coinValue[index]}
-                          </p>
+                //     {coinItems.map((item, index) => {
+                //       const coinInputType =
+                //         inputCoinType[index] !== undefined
+                //           ? inputCoinType[index]
+                //           : 'Iota';
 
-                          <Dialog
-                            onOpenChange={(open) => {
-                              if (!open) {
-                                setTxHash(null);
-                              }
-                            }}
-                          >
-                            <DialogTrigger className="w-[160px] flex-1 px-4 py-2 rounded-md bg-blue-400 hover:bg-blue-400 text-white">
-                              Transfer
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Transfer your token</DialogTitle>
-                                <DialogDescription>
-                                  This action cannot be undone. This will
-                                  permanently delete your account and remove
-                                  your data from our servers.
-                                </DialogDescription>
-                                <Input
-                                  className="my-5"
-                                  type="number"
-                                  placeholder="Amount"
-                                  value={amount}
-                                  onChange={(e) => setAmount(e.target.value)}
-                                />
-                                <Input
-                                  className="my-5"
-                                  type="text"
-                                  placeholder="Recipient"
-                                  value={recipient}
-                                  onChange={(e) => setRecipient(e.target.value)}
-                                />
-                                <DialogFooter className="w-full flex justify-between">
-                                  <div className="flex-3">
-                                    {txHash && (
-                                      <a
-                                        href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-500 hover:text-blue-600"
-                                      >
-                                        Tx Result
-                                      </a>
-                                    )}
-                                  </div>
-                                  <Button
-                                    className="flex-1"
-                                    onClick={() =>
-                                      testSignAndSednTransaction(coinInputType)
-                                    }
-                                    disabled={isTransferring}
-                                  >
-                                    {isTransferring
-                                      ? 'Transferring...'
-                                      : 'Transfer'}
-                                  </Button>
-                                </DialogFooter>
-                              </DialogHeader>
-                            </DialogContent>
-                          </Dialog>
-                          <br />
+                //       return (
+                //         <div>
+                //           <p className="text-xl" key={index}>
+                //             {coinName[index]}
+                //           </p>
+                //           <p className="text-sm">
+                //             {' '}
+                //             Balance: {coinValue[index]}
+                //           </p>
+
+                //           <Dialog
+                //             onOpenChange={(open) => {
+                //               if (!open) {
+                //                 setTxHash(null);
+                //               }
+                //             }}
+                //           >
+                //             <DialogTrigger className="w-[160px] flex-1 px-4 py-2 rounded-md bg-blue-400 hover:bg-blue-400 text-white">
+                //               Transfer
+                //             </DialogTrigger>
+                //             <DialogContent>
+                //               <DialogHeader>
+                //                 <DialogTitle>Transfer your token</DialogTitle>
+                //                 <DialogDescription>
+                //                   This action cannot be undone. This will
+                //                   permanently delete your account and remove
+                //                   your data from our servers.
+                //                 </DialogDescription>
+                //                 <Input
+                //                   className="my-5"
+                //                   type="number"
+                //                   placeholder="Amount"
+                //                   value={amount}
+                //                   onChange={(e) => setAmount(e.target.value)}
+                //                 />
+                //                 <Input
+                //                   className="my-5"
+                //                   type="text"
+                //                   placeholder="Recipient"
+                //                   value={recipient}
+                //                   onChange={(e) => setRecipient(e.target.value)}
+                //                 />
+                //                 <DialogFooter className="w-full flex justify-between">
+                //                   <div className="flex-3">
+                //                     {txHash && (
+                //                       <a
+                //                         href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
+                //                         target="_blank"
+                //                         rel="noopener noreferrer"
+                //                         className="text-blue-500 hover:text-blue-600"
+                //                       >
+                //                         Tx Result
+                //                       </a>
+                //                     )}
+                //                   </div>
+                //                   <Button
+                //                     className="flex-1"
+                //                     onClick={() =>
+                //                       testSignAndSednTransaction(coinInputType)
+                //                     }
+                //                     disabled={isTransferring}
+                //                   >
+                //                     {isTransferring
+                //                       ? 'Transferring...'
+                //                       : 'Transfer'}
+                //                   </Button>
+                //                 </DialogFooter>
+                //               </DialogHeader>
+                //             </DialogContent>
+                //           </Dialog>
+                //           <br />
+                //         </div>
+                //       );
+                //     })}
+                //   </div>
+
+                //   <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
+                //     <h3 className="font-bold text-2xl mb-2">NFT :</h3>
+
+                //     {nftList.map((item: any, index) => {
+                //       const img = item?.image;
+                //       return (
+                //         <div>
+                //           <div>
+                //             <img
+                //               src={img}
+                //               width={50}
+                //               height={50}
+                //               alt="avatar"
+                //             />
+                //             <div>Name : {item.name}</div>
+                //             <div>ObjectId : {item.objectId}</div>
+                //           </div>
+
+                //           <Dialog
+                //             onOpenChange={(open) => {
+                //               if (!open) {
+                //                 setTxHash(null);
+                //               }
+                //             }}
+                //           >
+                //             <DialogTrigger className="w-[160px] flex-1 px-4 py-2 rounded-md bg-blue-400 hover:bg-blue-400 text-white">
+                //               Send
+                //             </DialogTrigger>
+                //             <DialogContent>
+                //               <DialogHeader>
+                //                 <DialogTitle>Transfer your NFT</DialogTitle>
+                //                 <Input
+                //                   className="my-5"
+                //                   type="text"
+                //                   placeholder="Recipient"
+                //                   value={nftRecipient}
+                //                   onChange={(e) =>
+                //                     setNftRecipient(e.target.value)
+                //                   }
+                //                 />
+                //                 <DialogFooter className="w-full flex justify-between">
+                //                   <div className="flex-3">
+                //                     {txHash && (
+                //                       <a
+                //                         href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
+                //                         target="_blank"
+                //                         rel="noopener noreferrer"
+                //                         className="text-blue-500 hover:text-blue-600"
+                //                       >
+                //                         Tx Result
+                //                       </a>
+                //                     )}
+                //                   </div>
+                //                   <Button
+                //                     className="flex-1"
+                //                     onClick={() => sendNft(item.objectId)}
+                //                     disabled={isTransferring}
+                //                   >
+                //                     {isTransferring
+                //                       ? 'Transferring...'
+                //                       : 'Transfer'}
+                //                   </Button>
+                //                 </DialogFooter>
+                //               </DialogHeader>
+                //             </DialogContent>
+                //           </Dialog>
+
+                //           <br />
+                //         </div>
+                //       );
+                //     })}
+                //   </div>
+
+                //   {signatureResult && (
+                //     <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
+                //       <h3 className="font-bold mb-2">Signature Result</h3>
+                //       <pre className="font-mono text-sm overflow-auto">
+                //         {signatureResult}
+                //       </pre>
+                //     </div>
+                //   )}
+                // </div>
+                <>
+                <Card className="border-accent/20 bg-gradient-to-r from-accent/5 to-primary/5">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Wallet className="h-5 w-5 text-accent" />
                         </div>
-                      );
-                    })}
-                    <p>
-                      {/*
-                    {balance
-                      ? Number(balance.totalBalance) / 10 ** IOTA_DECIMALS
-                      : 0}{" "}
-                    IOTA */}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
-                    <h3 className="font-bold text-2xl mb-2">NFT :</h3>
-
-                    {nftList.map((item: any, index) => {
-                      const img = item?.image;
-                      return (
                         <div>
-                          <div>
-                            <img
-                              src={img}
-                              width={50}
-                              height={50}
-                              alt="avatar"
-                            />
-                            <div>Name : {item.name}</div>
-                            <div>ObjectId : {item.objectId}</div>
-                          </div>
-
-                          <Dialog
-                            onOpenChange={(open) => {
-                              if (!open) {
-                                setTxHash(null);
-                              }
-                            }}
-                          >
-                            <DialogTrigger className="w-[160px] flex-1 px-4 py-2 rounded-md bg-blue-400 hover:bg-blue-400 text-white">
-                              Send
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Transfer your NFT</DialogTitle>
-                                <Input
-                                  className="my-5"
-                                  type="text"
-                                  placeholder="Recipient"
-                                  value={nftRecipient}
-                                  onChange={(e) =>
-                                    setNftRecipient(e.target.value)
-                                  }
-                                />
-                                <DialogFooter className="w-full flex justify-between">
-                                  <div className="flex-3">
-                                    {txHash && (
-                                      <a
-                                        href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-500 hover:text-blue-600"
-                                      >
-                                        Tx Result
-                                      </a>
-                                    )}
-                                  </div>
-                                  <Button
-                                    className="flex-1"
-                                    onClick={() => sendNft(item.objectId)}
-                                    disabled={isTransferring}
-                                  >
-                                    {isTransferring
-                                      ? 'Transferring...'
-                                      : 'Transfer'}
-                                  </Button>
-                                </DialogFooter>
-                              </DialogHeader>
-                            </DialogContent>
-                          </Dialog>
-
-                          <br />
+                          <CardTitle className="text-lg font-[var(--font-dm-sans)]">
+                            Wallet Connected
+                          </CardTitle>
+                          <CardDescription>
+                            Successfully connected to IOTA network
+                          </CardDescription>
                         </div>
-                      );
-                    })}
-                    <p>
-                      {/*
-                    {balance
-                      ? Number(balance.totalBalance) / 10 ** IOTA_DECIMALS
-                      : 0}{" "}
-                    IOTA */}
-                    </p>
-                  </div>
-
-                  {signatureResult && (
-                    <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
-                      <h3 className="font-bold mb-2">Signature Result</h3>
-                      <pre className="font-mono text-sm overflow-auto">
-                        {signatureResult}
-                      </pre>
+                      </div>
+                      {/* <Badge
+                        variant="secondary"
+                        className="bg-accent/10 text-accent border-accent/20"
+                      >
+                        Connected
+                      </Badge> */}
                     </div>
-                  )}
-                </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/50">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-mono text-muted-foreground">
+                          Address:
+                        </span>
+                        <span className="text-sm font-mono font-medium">
+
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm">
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          // onClick={onDisconnect}
+                        >
+                          Disconnect
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {/* Balance Card */}
+              <div className="lg:col-span-2">
+                <BalanceCard/>
+              </div>
+
+              {/* Quick Actions */}
+              <QuickActions />
+
+              {/* Transaction History */}
+              <div className="lg:col-span-3">
+                <TransactionHistory />
+              </div>
+            </div>
+                        </>
+
               )}
           </div>
+
         </div>
       </main>
     </div>
