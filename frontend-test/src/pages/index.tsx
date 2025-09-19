@@ -38,6 +38,7 @@ import {
   VAULT_OBJECT_ID,
   CERT_TYPE,
 } from '@/lib/config';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -558,6 +559,9 @@ export default function Home() {
     >
       <main className="flex flex-col gap-[32px] row-start-2 items-center w-full max-w-3xl">
         <div className="flex flex-col items-center gap-4 w-full">
+          <div className="flex w-full justify-end">
+            <ThemeToggle />
+          </div>
           <Image
             className="dark:invert"
             src="/Iota_logo.svg"
@@ -615,7 +619,7 @@ export default function Home() {
             {(connectedToSnap || connectedToMateWallet || currentAccount) &&
               currentAccount && (
                 <div className="flex flex-col gap-4 w-full">
-                  <div className="flex flex-col gap-2 bg-gray-300 p-4 rounded-md">
+                  <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
                     <h3 className="font-bold mb-2">Connected Account</h3>
                     <p className="text-sm mb-2">
                       <span className="font-semibold">Wallet:</span>{' '}
@@ -752,7 +756,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2 bg-gray-300 p-4 rounded-md">
+                  <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
                     <h3 className="font-bold text-2xl mb-2">Other Tokens :</h3>
 
                     {coinItems.map((item, index) => {
@@ -844,7 +848,7 @@ export default function Home() {
                     </p>
                   </div>
 
-                  <div className="flex flex-col gap-2 bg-gray-200 p-4 rounded-md">
+                  <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
                     <h3 className="font-bold text-2xl mb-2">NFT :</h3>
 
                     {nftList.map((item: any, index) => {

@@ -10,7 +10,8 @@ import {
 import { registerIotaSnapWallet } from '@/iota-snap-wallet';
 import { getFullnodeUrl } from '@iota/iota-sdk/client';
 import '@iota/dapp-kit/dist/index.css';
-import { Toaster } from 'sonner';
+import { ThemeProvider } from 'next-themes';
+import { Toaster } from '@/components/ui/sonner';
 
 // Register the Iota Snap wallet
 // console.log(registerIotaSnapWallet());
@@ -26,12 +27,19 @@ const queryClient = new QueryClient();
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      <IotaClientProvider networks={networkConfig} network="testnet">
-        <WalletProvider>
-          <Component {...pageProps} />
-          <Toaster />
-        </WalletProvider>
-      </IotaClientProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <IotaClientProvider networks={networkConfig} network="testnet">
+          <WalletProvider>
+            <Component {...pageProps} />
+            <Toaster />
+          </WalletProvider>
+        </IotaClientProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
