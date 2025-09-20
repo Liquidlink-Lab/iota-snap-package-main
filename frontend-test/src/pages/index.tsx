@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, createContext, useContext } from 'react';
 import Image from 'next/image';
 import { Geist, Geist_Mono } from 'next/font/google';
 import {
@@ -51,8 +51,9 @@ import {
 import { Wallet, Copy, ExternalLink } from 'lucide-react';
 
 import { BalanceCard } from '@/components/balance-card';
+import { TokenList } from '@/components/token-list';
 import { QuickActions } from '@/components/quick-actions';
-import { TransactionHistory } from '@/components/transaction-history';
+import { useAction } from '@/contexts/ActionProvider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -73,8 +74,8 @@ export default function Home() {
   const [flaskInstalled, setFlaskInstalled] = useState<boolean>(false);
   const [signatureResult, setSignatureResult] = useState<string | null>(null);
 
+  const { amount, receiver } = useAction();
   // Transfer
-  const [amount, setAmount] = useState<string>('');
   const [recipient, setRecipient] = useState<string>('');
   const [isTransferring, setIsTransferring] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -85,7 +86,8 @@ export default function Home() {
 
   const [coinItems, setCoinItems] = useState<CoinItem[]>([]);
   const [inputCoinType, setCoinType] = useState<string[]>([]);
-  const [coinName, setCoinName] = useState<(string | undefined)[]>([]);
+  const [coinName, setCoinName] = useState<(string| undefined)[]>([]);
+  const [coinIcon, setCoinIcon] = useState<(string | null | undefined)[]>([]);
   const [coinValue, setCoinValue] = useState<(string | undefined)[]>([]);
   const [stakingAmount, setStakingAmount] = useState<string>('');
   const [nftList, setNftList] = useState<(string | undefined)[]>([]);
@@ -173,6 +175,13 @@ export default function Home() {
         }),
       );
 
+      const coinIcon = await Promise.all(
+        coins.map(async ({ coinType }) => {
+          const meta = await client.getCoinMetadata({ coinType });
+          return meta?.iconUrl;
+        }),
+      );
+      setCoinIcon(coinIcon)
       setCoinName(metas);
       console.log('metas', metas);
 
@@ -290,7 +299,7 @@ export default function Home() {
     isConnected && currentWallet?.name === 'Iota Mate Wallet';
 
   const handleSignMessage = async () => {
-    if (!(connectedToSnap || connectedToMateWallet) || !currentAccount) {
+    if (!currentAccount) {
       return;
     }
 
@@ -321,8 +330,9 @@ export default function Home() {
   };
 
   const handleSignAndExecuteTransaction = async () => {
-    if (!(connectedToSnap || connectedToMateWallet) || !currentAccount) {
-      throw new Error('No wallet connected');
+    if (!currentAccount) {
+      console.log('No wallet connected');
+      return;
     }
 
     setIsTransferring(true);
@@ -331,7 +341,7 @@ export default function Home() {
     const coin = tx.splitCoins(tx.gas, [
       tx.pure.u64(Number(amount) * 10 ** IOTA_DECIMALS),
     ]);
-    tx.transferObjects([coin], recipient);
+    tx.transferObjects([coin], receiver);
 
     await signAndExecuteTransaction(
       {
@@ -354,93 +364,6 @@ export default function Home() {
     );
 
     setIsTransferring(false);
-  };
-
-  const testSignAndSednTransaction = async (tokenType: string) => {
-    if (
-      !(connectedToSnap || connectedToMateWallet || currentAccount) ||
-      !currentAccount
-    ) {
-      throw new Error('No wallet connected');
-    }
-    setIsTransferring(true);
-
-    try {
-      const tx = new Transaction();
-
-      // 若是用「Gas coin」本身（例如你要用 IOTA/SUI 本體當 gas 幣來轉）
-      // 就可以仍然使用 tx.gas 拆分：
-      const isGasLike = tokenType === '0x2::iota::IOTA';
-
-      if (isGasLike) {
-        // 直接從 gas coin 拆一顆出來轉
-        const piece = tx.splitCoins(tx.gas, [
-          tx.pure.u64(Number(amount) * 10 ** IOTA_DECIMALS),
-        ]);
-        tx.transferObjects([piece], recipient);
-      } else {
-        // 1) 先找你擁有的 Coin<tokenType>
-        //const { currentAccount } = useWallet();
-        //const addresses = await client.getAddresses();
-        const owner = currentAccount?.address;
-        const coins = await client.getCoins({ owner, coinType: tokenType });
-        console.log('address coins: ', coins);
-        if (!coins.data.length) {
-          throw new Error(`No ${tokenType} coin objects in wallet`);
-        }
-
-        // 2) 選第一顆當主 coin，其他先 merge 進來
-        const primary = tx.object(coins.data[0].coinObjectId);
-        const others = coins.data
-          .slice(1)
-          .map((c) => tx.object(c.coinObjectId));
-        if (others.length) {
-          tx.mergeCoins(primary, others);
-        }
-
-        // 3) 從主 coin split 出所需數量
-        const piece = tx.splitCoins(primary, [
-          tx.pure.u64(Number(amount) * 10 ** IOTA_DECIMALS),
-        ]);
-
-        // 4) 轉給對方
-        tx.transferObjects([piece], recipient);
-      }
-
-      try {
-        await signAndExecuteTransaction(
-          {
-            transaction: tx as any,
-            chain: 'iota:testnet',
-          },
-          {
-            onSuccess: (result) => {
-              console.log('executed transaction', result);
-              setTxHash(result.digest);
-              toast.success(
-                <a
-                  href={`https://explorer.iota.org/txblock/${result.digest}?network=testnet`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: 'black', textDecoration: 'underline' }}
-                >
-                  Transaction executed successfully,
-                  {`https://explorer.iota.org/txblock/${result.digest}?network=testnet`}
-                </a>,
-              );
-            },
-            onError: (error) => {
-              console.error(error);
-              toast.error('Transaction failed');
-            },
-          },
-        );
-      } finally {
-        setIsTransferring(false);
-      }
-    } catch (e) {
-      console.error(e);
-    }
   };
 
   const handleIotaStake = async () => {
@@ -568,9 +491,11 @@ export default function Home() {
     }
   }
 
+  const handleBuy = () => console.log('Buy');
+
   return (
     <div
-      className={`${geistSans.className} ${geistMono.className} grid grid-rows-[10px_1fr_10px] items-center justify-items-center min-h-screen pt-6 pb-20 gap-8 sm:p-8 font-[family-name:var(--font-geist-sans)]`}
+      className={`${geistSans.className} ${geistMono.className} grid grid-rows-[10px_1fr_10px] items-center justify-items-center min-h-screen pt-6 pb-20 gap-4 sm:p-6 font-[family-name:var(--font-geist-sans)]`}
     >
       <main className="flex flex-col gap-6 row-start-2 items-center w-full max-w-4xl">
         <div className="flex flex-col items-center gap-4 w-full">
@@ -600,23 +525,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* {!flaskInstalled && (
-            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-4 w-full">
-              <strong className="font-bold">MetaMask Wallet Required: </strong>
-              <span className="block sm:inline">
-                Iota Snap requires MetaMask wallet, a canary distribution for
-                developers with access to upcoming features.
-                <a
-                  href="https://metamask.io/download"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline ml-1"
-                >
-                  Install MetaMask
-                </a>
-              </span>
-            </div>
-          )} */}
 
           <div className="flex flex-col gap-4 w-full">
             {!isConnected && (
@@ -648,24 +556,6 @@ export default function Home() {
             {(connectedToSnap || connectedToMateWallet || currentAccount) &&
               currentAccount && (
                 // <div className="flex flex-col gap-4 w-full">
-                //   <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
-                //     <h3 className="font-bold mb-2">Connected Account</h3>
-                //     <p className="text-sm mb-2">
-                //       <span className="font-semibold">Wallet:</span>{' '}
-                //       {currentWallet?.name}
-                //     </p>
-                //     <p className="font-mono text-sm break-all">
-                //       {currentAccount.address}
-                //     </p>
-                //     <p>
-                //       Balance:{' '}
-                //       {balance
-                //         ? Number(balance.totalBalance) / 10 ** IOTA_DECIMALS
-                //         : 0}{' '}
-                //       IOTA
-                //     </p>
-                //     <p>Network: {ctx.network}</p>
-                //   </div>
 
                 //   <div className="w-full flex gap-3">
                 //     <button
@@ -723,66 +613,66 @@ export default function Home() {
                 //         </DialogContent>
                 //       </Dialog>
                 //     </div>
-                //     <div className="flex-1">
-                //       <Dialog
-                //         onOpenChange={(open) => {
-                //           if (!open) {
-                //             setTxHash(null);
-                //           }
-                //         }}
-                //       >
-                //         <DialogTrigger className="w-full flex-1 px-4 py-2 rounded-md bg-blue-400 hover:bg-blue-400 text-white">
-                //           Transfer
-                //         </DialogTrigger>
-                //         <DialogContent>
-                //           <DialogHeader>
-                //             <DialogTitle>Transfer your token</DialogTitle>
-                //             <DialogDescription>
-                //               This action cannot be undone. This will
-                //               permanently delete your account and remove your
-                //               data from our servers.
-                //             </DialogDescription>
-                //             <Input
-                //               className="my-5"
-                //               type="number"
-                //               placeholder="Amount"
-                //               value={amount}
-                //               onChange={(e) => setAmount(e.target.value)}
-                //             />
-                //             <Input
-                //               className="my-5"
-                //               type="text"
-                //               placeholder="Recipient"
-                //               value={recipient}
-                //               onChange={(e) => setRecipient(e.target.value)}
-                //             />
-                //             <DialogFooter className="w-full flex justify-between">
-                //               <div className="flex-3">
-                //                 {txHash && (
-                //                   <a
-                //                     href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
-                //                     target="_blank"
-                //                     rel="noopener noreferrer"
-                //                     className="text-blue-500 hover:text-blue-600"
-                //                   >
-                //                     Tx Result
-                //                   </a>
-                //                 )}
-                //               </div>
-                //               <Button
-                //                 className="flex-1"
-                //                 onClick={handleSignAndExecuteTransaction}
-                //                 disabled={isTransferring}
+                // <div className="flex-1">
+                //   <Dialog
+                //     onOpenChange={(open) => {
+                //       if (!open) {
+                //         setTxHash(null);
+                //       }
+                //     }}
+                //   >
+                //     <DialogTrigger className="w-full flex-1 px-4 py-2 rounded-md bg-blue-400 hover:bg-blue-400 text-white">
+                //       Transfer
+                //     </DialogTrigger>
+                //     <DialogContent>
+                //       <DialogHeader>
+                //         <DialogTitle>Transfer your token</DialogTitle>
+                //         <DialogDescription>
+                //           This action cannot be undone. This will
+                //           permanently delete your account and remove your
+                //           data from our servers.
+                //         </DialogDescription>
+                //         <Input
+                //           className="my-5"
+                //           type="number"
+                //           placeholder="Amount"
+                //           value={amount}
+                //           onChange={(e) => setAmount(e.target.value)}
+                //         />
+                //         <Input
+                //           className="my-5"
+                //           type="text"
+                //           placeholder="Recipient"
+                //           value={recipient}
+                //           onChange={(e) => setRecipient(e.target.value)}
+                //         />
+                //         <DialogFooter className="w-full flex justify-between">
+                //           <div className="flex-3">
+                //             {txHash && (
+                //               <a
+                //                 href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
+                //                 target="_blank"
+                //                 rel="noopener noreferrer"
+                //                 className="text-blue-500 hover:text-blue-600"
                 //               >
-                //                 {isTransferring
-                //                   ? 'Transferring...'
-                //                   : 'Transfer'}
-                //               </Button>
-                //             </DialogFooter>
-                //           </DialogHeader>
-                //         </DialogContent>
-                //       </Dialog>
-                //     </div>
+                //                 Tx Result
+                //               </a>
+                //             )}
+                //           </div>
+                //           <Button
+                //             className="flex-1"
+                //             onClick={handleSignAndExecuteTransaction}
+                //             disabled={isTransferring}
+                //           >
+                //             {isTransferring
+                //               ? 'Transferring...'
+                //               : 'Transfer'}
+                //           </Button>
+                //         </DialogFooter>
+                //       </DialogHeader>
+                //     </DialogContent>
+                //   </Dialog>
+                // </div>
                 //   </div>
 
                 //   <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
@@ -989,9 +879,7 @@ export default function Home() {
                           <Button variant="ghost" size="sm">
                             <Copy className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
-                            <ExternalLink className="h-4 w-4" />
-                          </Button>
+
                           <Button variant="outline" size="sm">
                             Disconnect
                           </Button>
@@ -1008,21 +896,27 @@ export default function Home() {
                             ? Number(balance.totalBalance) / 10 ** IOTA_DECIMALS
                             : 0
                         }
+                        network={ctx.network}
                       />
                     </div>
 
                     {/* Quick Actions */}
-                    <QuickActions />
-
-                    {/* Transaction History */}
+                    <QuickActions
+                      onHandleSignMessage={handleSignMessage}
+                      onHandleSignAndExecuteTransaction={
+                        handleSignAndExecuteTransaction
+                      }
+                    />
+                    {/* TokenList */}
                     <div className="lg:col-span-3">
-                      <TransactionHistory />
+                      <TokenList items={coinItems} inputCoinType={inputCoinType} coinNameList={coinName} userCoinValue={coinValue} userCoinIcon={coinIcon}/>
                     </div>
                   </div>
                 </>
               )}
           </div>
         </div>
+
         {/* Footer */}
         <footer className="border-t border-border bg-card/30 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-6">
@@ -1033,7 +927,10 @@ export default function Home() {
                 </span>
               </div>
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                <a href="https://www.npmjs.com/package/@liquidlink-lab/iota-metamask-snap" className="hover:text-foreground transition-colors">
+                <a
+                  href="https://www.npmjs.com/package/@liquidlink-lab/iota-metamask-snap"
+                  className="hover:text-foreground transition-colors"
+                >
                   Snap Document
                 </a>
                 <a className="hover:text-foreground transition-colors">

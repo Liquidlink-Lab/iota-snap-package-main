@@ -13,9 +13,10 @@ import { useState } from 'react';
 
 interface BalanceCardProps {
   balance: number;
+  network: string;
 }
 
-export function BalanceCard({ balance }: BalanceCardProps) {
+export function BalanceCard({ balance, network }: BalanceCardProps) {
   const [showBalance, setShowBalance] = useState(true);
 
   return (
@@ -49,13 +50,18 @@ export function BalanceCard({ balance }: BalanceCardProps) {
             </div>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-sm text-muted-foreground">
-                {(balance * 0.2).toFixed(5) +' USD '}
+                {(balance * 0.2).toFixed(5) + ' USD '}
               </span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/50">
-
+            <div>
+              <div className="text-sm text-muted-foreground">Network</div>
+              <div className="text-lg font-semibold font-[var(--font-dm-sans)]">
+                {network}
+              </div>
+            </div>
             <div>
               <div className="text-sm text-muted-foreground">Staked</div>
               <div className="text-lg font-semibold font-[var(--font-dm-sans)]">

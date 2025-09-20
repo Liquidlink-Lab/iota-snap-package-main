@@ -13,11 +13,8 @@ import '@iota/dapp-kit/dist/index.css';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import Head from 'next/head';
+import { ActionProvider } from '@/contexts/ActionProvider';
 
-// Register the Iota Snap wallet
-// console.log(registerIotaSnapWallet());
-
-// Create a network config for Iota
 const { networkConfig } = createNetworkConfig({
   testnet: { url: getFullnodeUrl('testnet') },
 });
@@ -37,19 +34,21 @@ export default function App({ Component, pageProps }: AppProps) {
         <link rel="icon" href="/Iota-snap.png" />
       </Head>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <IotaClientProvider networks={networkConfig} network="testnet">
-            <WalletProvider>
-              <Component {...pageProps} />
-              <Toaster />
-            </WalletProvider>
-          </IotaClientProvider>
-        </ThemeProvider>
+        <ActionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <IotaClientProvider networks={networkConfig} network="testnet">
+              <WalletProvider>
+                <Component {...pageProps} />
+                <Toaster />
+              </WalletProvider>
+            </IotaClientProvider>
+          </ThemeProvider>
+        </ActionProvider>
       </QueryClientProvider>
     </>
   );
