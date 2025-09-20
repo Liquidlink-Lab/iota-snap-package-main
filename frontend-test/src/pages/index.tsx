@@ -39,7 +39,6 @@ import {
   CERT_TYPE,
 } from '@/lib/config';
 import { ThemeToggle } from '@/components/theme-toggle';
-import type { Metadata } from 'next';
 
 import {
   Card,
@@ -51,9 +50,9 @@ import {
 
 import { Wallet, Copy, ExternalLink } from 'lucide-react';
 
-import { BalanceCard } from "@/components/balance-card"
-import { QuickActions } from "@/components/quick-actions"
-import { TransactionHistory } from "@/components/transaction-history"
+import { BalanceCard } from '@/components/balance-card';
+import { QuickActions } from '@/components/quick-actions';
+import { TransactionHistory } from '@/components/transaction-history';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -68,12 +67,6 @@ const geistMono = Geist_Mono({
 const client = new IotaClient({
   url: getFullnodeUrl('testnet'), // 可改成 'mainnet' 或 'testnet'
 });
-
-export const metadata: Metadata = {
-  title: 'IOTA Wallet - Secure Web3 Wallet',
-  description: 'Connect to IOTA network with our secure Web3 wallet interface',
-  generator: 'v0.app',
-};
 
 export default function Home() {
   const [error, setError] = useState<string | undefined>(undefined);
@@ -577,9 +570,9 @@ export default function Home() {
 
   return (
     <div
-      className={`${geistSans.className} ${geistMono.className} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
+      className={`${geistSans.className} ${geistMono.className} grid grid-rows-[10px_1fr_10px] items-center justify-items-center min-h-screen pt-6 pb-20 gap-8 sm:p-8 font-[family-name:var(--font-geist-sans)]`}
     >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center w-full max-w-4xl">
+      <main className="flex flex-col gap-6 row-start-2 items-center w-full max-w-4xl">
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="flex w-full justify-end">
             <ThemeToggle />
@@ -594,9 +587,11 @@ export default function Home() {
           />
 
           <h1 className="text-3xl font-bold mt-8 mb-4">Iota Snap Wallet</h1>
-          {/* <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
-            Connect to either Iota MetaMask Wallet
-          </p> */}
+          {isConnected && (
+            <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
+              Using wallet by metamask,design and dev by Liquidlink.
+            </p>
+          )}
 
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 w-full">
@@ -605,23 +600,23 @@ export default function Home() {
             </div>
           )}
 
-          {!flaskInstalled && (
+          {/* {!flaskInstalled && (
             <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-4 w-full">
-              <strong className="font-bold">MetaMask Flask Required: </strong>
+              <strong className="font-bold">MetaMask Wallet Required: </strong>
               <span className="block sm:inline">
-                Iota Snap requires MetaMask Flask, a canary distribution for
+                Iota Snap requires MetaMask wallet, a canary distribution for
                 developers with access to upcoming features.
                 <a
-                  href="https://metamask.io/flask/"
+                  href="https://metamask.io/download"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline ml-1"
                 >
-                  Install MetaMask Flask
+                  Install MetaMask
                 </a>
               </span>
             </div>
-          )}
+          )} */}
 
           <div className="flex flex-col gap-4 w-full">
             {!isConnected && (
@@ -652,7 +647,6 @@ export default function Home() {
 
             {(connectedToSnap || connectedToMateWallet || currentAccount) &&
               currentAccount && (
-
                 // <div className="flex flex-col gap-4 w-full">
                 //   <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
                 //     <h3 className="font-bold mb-2">Connected Account</h3>
@@ -959,78 +953,96 @@ export default function Home() {
                 //   )}
                 // </div>
                 <>
-                <Card className="border-accent/20 bg-gradient-to-r from-accent/5 to-primary/5">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-accent/10">
-                          <Wallet className="h-5 w-5 text-accent" />
+                  <Card className="border-accent/20 bg-gradient-to-r from-accent/5 to-primary/5">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-gray-800">
+                            <Wallet className="h-5 w-5 text-white " />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg font-[var(--font-dm-sans)]">
+                              Wallet Connected
+                            </CardTitle>
+                            <CardDescription>
+                              Successfully connected to IOTA network
+                            </CardDescription>
+                          </div>
                         </div>
-                        <div>
-                          <CardTitle className="text-lg font-[var(--font-dm-sans)]">
-                            Wallet Connected
-                          </CardTitle>
-                          <CardDescription>
-                            Successfully connected to IOTA network
-                          </CardDescription>
-                        </div>
-                      </div>
-                      {/* <Badge
+                        {/* <Badge
                         variant="secondary"
                         className="bg-accent/10 text-accent border-accent/20"
                       >
                         Connected
                       </Badge> */}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/50">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-mono text-muted-foreground">
-                          Address:
-                        </span>
-                        <span className="text-sm font-mono font-medium">
-
-                        </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          // onClick={onDisconnect}
-                        >
-                          Disconnect
-                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/50">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-mono text-muted-foreground">
+                            Address:{currentAccount.address}
+                          </span>
+                          <span className="text-sm font-mono font-medium"></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm">
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            Disconnect
+                          </Button>
+                        </div>
                       </div>
+                    </CardContent>
+                  </Card>
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {/* Balance Card */}
+                    <div className="lg:col-span-2">
+                      <BalanceCard
+                        balance={
+                          balance
+                            ? Number(balance.totalBalance) / 10 ** IOTA_DECIMALS
+                            : 0
+                        }
+                      />
                     </div>
-                  </CardContent>
-                </Card>
-                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {/* Balance Card */}
-              <div className="lg:col-span-2">
-                <BalanceCard/>
-              </div>
 
-              {/* Quick Actions */}
-              <QuickActions />
+                    {/* Quick Actions */}
+                    <QuickActions />
 
-              {/* Transaction History */}
-              <div className="lg:col-span-3">
-                <TransactionHistory />
-              </div>
-            </div>
-                        </>
-
+                    {/* Transaction History */}
+                    <div className="lg:col-span-3">
+                      <TransactionHistory />
+                    </div>
+                  </div>
+                </>
               )}
           </div>
-
         </div>
+        {/* Footer */}
+        <footer className="border-t border-border bg-card/30 backdrop-blur-sm">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  © 2025 IOTA Snap Wallet. Built by Liquidlink.
+                </span>
+              </div>
+              <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                <a href="https://www.npmjs.com/package/@liquidlink-lab/iota-metamask-snap" className="hover:text-foreground transition-colors">
+                  Snap Document
+                </a>
+                <a className="hover:text-foreground transition-colors">
+                  Contact Liquidlink with liquidlink.io@gmail.com
+                </a>
+              </div>
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
   );
