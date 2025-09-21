@@ -9,10 +9,22 @@ import {
   Plus,
   ChevronDown,
   ChevronUp,
+  Send,
 } from 'lucide-react';
 import { useState } from 'react';
-import Image from 'next/image'
+import Image from 'next/image';
 
+import {
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useAction } from '@/contexts/ActionProvider';
 
 interface Token {
   id: string;
@@ -89,19 +101,33 @@ const mockTokens: Token[] = [
     icon: '⚫',
   },
 ];
-export type CoinItem = { coinType: string; balance: string }
+export type CoinItem = { coinType: string; balance: string };
 
 interface CoinListProps {
-  items: ReadonlyArray<CoinItem>
-  inputCoinType:ReadonlyArray<string>
-  coinNameList:ReadonlyArray<string| undefined>
-  userCoinValue:ReadonlyArray<string| undefined>
-  userCoinIcon:ReadonlyArray<string | null | undefined>
+  items: ReadonlyArray<CoinItem>;
+  inputCoinType: ReadonlyArray<string>;
+  coinNameList: ReadonlyArray<string | undefined>;
+  userCoinValue: ReadonlyArray<string | undefined>;
+  userCoinIcon: ReadonlyArray<string | null | undefined>;
+  userCoinSymbol: ReadonlyArray<string | undefined>;
+  onHandleSignTokenAndExecuteTransaction: (args: any) => Promise<void>;
 }
 
-export function TokenList({items,inputCoinType,coinNameList,userCoinValue,userCoinIcon}:CoinListProps) {
+export function TokenList({
+  items,
+  inputCoinType,
+  coinNameList,
+  userCoinValue,
+  userCoinIcon,
+  userCoinSymbol,
+  onHandleSignTokenAndExecuteTransaction,
+}: CoinListProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [isTransferring, setIsTransferring] = useState<boolean>(false);
   const INITIAL_DISPLAY_COUNT = 4;
+
+  const { amount, setSendAmount, receiver, setReceiveUser } = useAction();
 
   const displayedTokens = isExpanded
     ? mockTokens
@@ -120,54 +146,119 @@ export function TokenList({items,inputCoinType,coinNameList,userCoinValue,userCo
               Your cryptocurrency holdings
             </p>
           </div>
-
         </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
           {items.map((item, index) => {
-  const coinInputType =
-                         inputCoinType[index] !== undefined
-                           ? inputCoinType[index]
-                         : 'Iota';
+            const coinInputType =
+              inputCoinType[index] !== undefined
+                ? inputCoinType[index]
+                : 'Iota';
 
-                         console.log('coinNameList[index]',coinNameList[index])
+            console.log('coinNameList[index]', coinNameList[index]);
 
-            return(
-            <div
-
-              className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-lg">
-                   {userCoinIcon[index] &&(
-                   <Image
-                      src={userCoinIcon[index]}
-                      width={500}
-                      height={500}
-                      alt="Picture of the author"
-                    />)
-                  }
-                </div>
-                <div>
-                  <div className="font-medium text-foreground">
-                    {coinNameList[index]}
+            return (
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-lg">
+                    {userCoinIcon[index] && (
+                      <Image
+                        src={userCoinIcon[index]}
+                        width={500}
+                        height={500}
+                        alt="Picture of the author"
+                      />
+                    )}
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                   BBR
+                  <div>
+                    <div className="font-medium text-foreground">
+                      {coinNameList[index]}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {userCoinSymbol[index]}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-6 text-right">
+                  <div>
+                    <div className="font-medium text-foreground">
+                      {userCoinValue[index]}
+                    </div>
+
+                    <Dialog
+                      onOpenChange={(open) => {
+                        if (!open) {
+                          setTxHash(null);
+                        }
+                      }}
+                    >
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 bg-transparent hover:bg-primary/10 border-primary/20"
+                        >
+                          <Send className="h-3 w-3" />
+                          Send
+                        </Button>
+                      </DialogTrigger>
+
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Transfer your token</DialogTitle>
+                          <DialogDescription>
+                            This action cannot be undone. This will permanently
+                            delete your account and remove your data from our
+                            servers.
+                          </DialogDescription>
+                          <Input
+                            className="my-5"
+                            type="number"
+                            placeholder="Amount"
+                            value={amount}
+                            onChange={(e) => setSendAmount(e.target.value)}
+                          />
+                          <Input
+                            className="my-5"
+                            type="text"
+                            placeholder="Recipient"
+                            value={receiver}
+                            onChange={(e) => setReceiveUser(e.target.value)}
+                          />
+                          <DialogFooter className="w-full flex justify-between">
+                            <div className="flex-3">
+                              {txHash && (
+                                <a
+                                  href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-500 hover:text-blue-600"
+                                >
+                                  Tx Result
+                                </a>
+                              )}
+                            </div>
+                            <Button
+                              className="flex-1"
+                              onClick={() =>
+                                onHandleSignTokenAndExecuteTransaction(
+                                  coinInputType
+                                )
+                              }
+                              disabled={isTransferring}
+                            >
+                              {isTransferring ? 'Transferring...' : 'Transfer'}
+                            </Button>
+                          </DialogFooter>
+                        </DialogHeader>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               </div>
-
-              <div className="flex items-center gap-6 text-right">
-                <div>
-                  <div className="font-medium text-foreground">
-                   {userCoinValue[index]}
-                  </div>
-                </div>
-              </div>
-            </div>
-            )
+            );
           })}
         </div>
 

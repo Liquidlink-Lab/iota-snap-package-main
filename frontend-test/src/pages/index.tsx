@@ -86,9 +86,10 @@ export default function Home() {
 
   const [coinItems, setCoinItems] = useState<CoinItem[]>([]);
   const [inputCoinType, setCoinType] = useState<string[]>([]);
-  const [coinName, setCoinName] = useState<(string| undefined)[]>([]);
+  const [coinName, setCoinName] = useState<(string | undefined)[]>([]);
   const [coinIcon, setCoinIcon] = useState<(string | null | undefined)[]>([]);
   const [coinValue, setCoinValue] = useState<(string | undefined)[]>([]);
+  const [coinSymbol, setCoinSymbol] = useState<(string | undefined)[]>([]);
   const [stakingAmount, setStakingAmount] = useState<string>('');
   const [nftList, setNftList] = useState<(string | undefined)[]>([]);
   const [nftRecipient, setNftRecipient] = useState<string>('');
@@ -171,7 +172,7 @@ export default function Home() {
       const metas = await Promise.all(
         coins.map(async ({ coinType }) => {
           const meta = await client.getCoinMetadata({ coinType });
-          return meta?.symbol;
+          return meta?.name;
         }),
       );
 
@@ -181,7 +182,16 @@ export default function Home() {
           return meta?.iconUrl;
         }),
       );
-      setCoinIcon(coinIcon)
+
+      const coinSymbol = await Promise.all(
+        coins.map(async ({ coinType }) => {
+          const meta = await client.getCoinMetadata({ coinType });
+          return meta?.symbol;
+        }),
+      );
+
+      setCoinSymbol(coinSymbol);
+      setCoinIcon(coinIcon);
       setCoinName(metas);
       console.log('metas', metas);
 
@@ -428,6 +438,95 @@ export default function Home() {
     setIsTransferring(false);
   };
 
+  const signTokenAndSendTransaction = async (tokenType: string) => {
+    console.log('CoinType:',tokenType)
+    console.log('Receive:',receiver)
+    if (
+      !(connectedToSnap || connectedToMateWallet || currentAccount) ||
+      !currentAccount
+    ) {
+      throw new Error('No wallet connected');
+    }
+    setIsTransferring(true);
+
+    try {
+      const tx = new Transaction();
+
+      // 若是用「Gas coin」本身（例如你要用 IOTA/SUI 本體當 gas 幣來轉）
+      // 就可以仍然使用 tx.gas 拆分：
+      const isGasLike = tokenType === '0x2::iota::IOTA';
+
+      if (isGasLike) {
+        // 直接從 gas coin 拆一顆出來轉
+        const piece = tx.splitCoins(tx.gas, [
+          tx.pure.u64(Number(amount) * 10 ** IOTA_DECIMALS),
+        ]);
+        tx.transferObjects([piece], receiver);
+      } else {
+        // 1) 先找你擁有的 Coin<tokenType>
+        //const { currentAccount } = useWallet();
+        //const addresses = await client.getAddresses();
+        const owner = currentAccount?.address;
+        const coins = await client.getCoins({ owner, coinType: tokenType });
+        console.log('address coins: ', coins);
+        if (!coins.data.length) {
+          throw new Error(`No ${tokenType} coin objects in wallet`);
+        }
+
+        // 2) 選第一顆當主 coin，其他先 merge 進來
+        const primary = tx.object(coins.data[0].coinObjectId);
+        const others = coins.data
+          .slice(1)
+          .map((c) => tx.object(c.coinObjectId));
+        if (others.length) {
+          tx.mergeCoins(primary, others);
+        }
+
+        // 3) 從主 coin split 出所需數量
+        const piece = tx.splitCoins(primary, [
+          tx.pure.u64(Number(amount) * 10 ** IOTA_DECIMALS),
+        ]);
+
+        // 4) 轉給對方
+        tx.transferObjects([piece], receiver);
+      }
+
+      try {
+        await signAndExecuteTransaction(
+          {
+            transaction: tx as any,
+            chain: 'iota:testnet',
+          },
+          {
+            onSuccess: (result) => {
+              console.log('executed transaction', result);
+              setTxHash(result.digest);
+              toast.success(
+                <a
+                  href={`https://explorer.iota.org/txblock/${result.digest}?network=testnet`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'black', textDecoration: 'underline' }}
+                >
+                  Transaction executed successfully,
+                  {`https://explorer.iota.org/txblock/${result.digest}?network=testnet`}
+                </a>,
+              );
+            },
+            onError: (error) => {
+              console.error(error);
+              toast.error('Transaction failed');
+            },
+          },
+        );
+      } finally {
+        setIsTransferring(false);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   function isProbablyNFT(obj: any) {
     const type = obj?.data?.type as string | undefined;
     if (!type) return false;
@@ -491,8 +590,6 @@ export default function Home() {
     }
   }
 
-  const handleBuy = () => console.log('Buy');
-
   return (
     <div
       className={`${geistSans.className} ${geistMono.className} grid grid-rows-[10px_1fr_10px] items-center justify-items-center min-h-screen pt-6 pb-20 gap-4 sm:p-6 font-[family-name:var(--font-geist-sans)]`}
@@ -524,7 +621,6 @@ export default function Home() {
               <span className="block sm:inline">{error}</span>
             </div>
           )}
-
 
           <div className="flex flex-col gap-4 w-full">
             {!isConnected && (
@@ -613,6 +709,7 @@ export default function Home() {
                 //         </DialogContent>
                 //       </Dialog>
                 //     </div>
+
                 // <div className="flex-1">
                 //   <Dialog
                 //     onOpenChange={(open) => {
@@ -694,66 +791,66 @@ export default function Home() {
                 //             Balance: {coinValue[index]}
                 //           </p>
 
-                //           <Dialog
-                //             onOpenChange={(open) => {
-                //               if (!open) {
-                //                 setTxHash(null);
-                //               }
-                //             }}
-                //           >
-                //             <DialogTrigger className="w-[160px] flex-1 px-4 py-2 rounded-md bg-blue-400 hover:bg-blue-400 text-white">
-                //               Transfer
-                //             </DialogTrigger>
-                //             <DialogContent>
-                //               <DialogHeader>
-                //                 <DialogTitle>Transfer your token</DialogTitle>
-                //                 <DialogDescription>
-                //                   This action cannot be undone. This will
-                //                   permanently delete your account and remove
-                //                   your data from our servers.
-                //                 </DialogDescription>
-                //                 <Input
-                //                   className="my-5"
-                //                   type="number"
-                //                   placeholder="Amount"
-                //                   value={amount}
-                //                   onChange={(e) => setAmount(e.target.value)}
-                //                 />
-                //                 <Input
-                //                   className="my-5"
-                //                   type="text"
-                //                   placeholder="Recipient"
-                //                   value={recipient}
-                //                   onChange={(e) => setRecipient(e.target.value)}
-                //                 />
-                //                 <DialogFooter className="w-full flex justify-between">
-                //                   <div className="flex-3">
-                //                     {txHash && (
-                //                       <a
-                //                         href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
-                //                         target="_blank"
-                //                         rel="noopener noreferrer"
-                //                         className="text-blue-500 hover:text-blue-600"
-                //                       >
-                //                         Tx Result
-                //                       </a>
-                //                     )}
-                //                   </div>
-                //                   <Button
-                //                     className="flex-1"
-                //                     onClick={() =>
-                //                       testSignAndSednTransaction(coinInputType)
-                //                     }
-                //                     disabled={isTransferring}
-                //                   >
-                //                     {isTransferring
-                //                       ? 'Transferring...'
-                //                       : 'Transfer'}
-                //                   </Button>
-                //                 </DialogFooter>
-                //               </DialogHeader>
-                //             </DialogContent>
-                //           </Dialog>
+                // <Dialog
+                //   onOpenChange={(open) => {
+                //     if (!open) {
+                //       setTxHash(null);
+                //     }
+                //   }}
+                // >
+                //   <DialogTrigger className="w-[160px] flex-1 px-4 py-2 rounded-md bg-blue-400 hover:bg-blue-400 text-white">
+                //     Transfer
+                //   </DialogTrigger>
+                //   <DialogContent>
+                //     <DialogHeader>
+                //       <DialogTitle>Transfer your token</DialogTitle>
+                //       <DialogDescription>
+                //         This action cannot be undone. This will
+                //         permanently delete your account and remove
+                //         your data from our servers.
+                //       </DialogDescription>
+                //       <Input
+                //         className="my-5"
+                //         type="number"
+                //         placeholder="Amount"
+                //         value={amount}
+                //         onChange={(e) => setAmount(e.target.value)}
+                //       />
+                //       <Input
+                //         className="my-5"
+                //         type="text"
+                //         placeholder="Recipient"
+                //         value={recipient}
+                //         onChange={(e) => setRecipient(e.target.value)}
+                //       />
+                //       <DialogFooter className="w-full flex justify-between">
+                //         <div className="flex-3">
+                //           {txHash && (
+                //             <a
+                //               href={`https://explorer.iota.org/txblock/${txHash}?network=testnet`}
+                //               target="_blank"
+                //               rel="noopener noreferrer"
+                //               className="text-blue-500 hover:text-blue-600"
+                //             >
+                //               Tx Result
+                //             </a>
+                //           )}
+                //         </div>
+                //         <Button
+                //           className="flex-1"
+                //           onClick={() =>
+                //             signTokenAndSendTransaction(coinInputType)
+                //           }
+                //           disabled={isTransferring}
+                //         >
+                //           {isTransferring
+                //             ? 'Transferring...'
+                //             : 'Transfer'}
+                //         </Button>
+                //       </DialogFooter>
+                //     </DialogHeader>
+                //   </DialogContent>
+                // </Dialog>
                 //           <br />
                 //         </div>
                 //       );
@@ -909,7 +1006,17 @@ export default function Home() {
                     />
                     {/* TokenList */}
                     <div className="lg:col-span-3">
-                      <TokenList items={coinItems} inputCoinType={inputCoinType} coinNameList={coinName} userCoinValue={coinValue} userCoinIcon={coinIcon}/>
+                      <TokenList
+                        items={coinItems}
+                        inputCoinType={inputCoinType}
+                        coinNameList={coinName}
+                        userCoinValue={coinValue}
+                        userCoinIcon={coinIcon}
+                        userCoinSymbol={coinSymbol}
+                        onHandleSignTokenAndExecuteTransaction={
+                          signTokenAndSendTransaction
+                        }
+                      />
                     </div>
                   </div>
                 </>
