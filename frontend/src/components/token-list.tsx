@@ -244,7 +244,7 @@ export function TokenList({
                               className="flex-1"
                               onClick={() =>
                                 onHandleSignTokenAndExecuteTransaction(
-                                  coinInputType
+                                  coinInputType,
                                 )
                               }
                               disabled={isTransferring}
