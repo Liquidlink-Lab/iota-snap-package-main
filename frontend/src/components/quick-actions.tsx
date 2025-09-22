@@ -47,7 +47,7 @@ export function QuickActions({
               }
             }}
           >
-            <DialogTrigger>
+            <DialogTrigger asChild>
               <Button
                 variant="outline"
                 className="h-auto p-4 flex-col gap-2 bg-transparent"
@@ -123,7 +123,7 @@ export function QuickActions({
               }
             }}
           >
-            <DialogTrigger>
+            <DialogTrigger asChild>
               <Button
                 variant="outline"
                 className="h-auto p-4 flex-col w-full gap-2 bg-transparent"

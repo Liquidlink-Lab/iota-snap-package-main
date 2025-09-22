@@ -129,6 +129,11 @@ export function TokenList({
 
   const { amount, setSendAmount, receiver, setReceiveUser } = useAction();
 
+ const newCoinList = Array.from(
+    new Map(items.map((i, idx) => [i.coinType, { item: i, idx }])).values()
+  );
+  console.log('newCoinList',newCoinList)
+
   const displayedTokens = isExpanded
     ? mockTokens
     : mockTokens.slice(0, INITIAL_DISPLAY_COUNT);
@@ -140,7 +145,7 @@ export function TokenList({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-lg font-[var(--font-dm-sans)]">
-              Token Portfolio
+              Token List
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               Your cryptocurrency holdings
@@ -150,13 +155,14 @@ export function TokenList({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {items.map((item, index) => {
+          {newCoinList.map((item, index) => {
             const coinInputType =
               inputCoinType[index] !== undefined
                 ? inputCoinType[index]
                 : 'Iota';
 
             console.log('coinNameList[index]', coinNameList[index]);
+            console.log('[index]', item);
 
             return (
               <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors cursor-pointer">

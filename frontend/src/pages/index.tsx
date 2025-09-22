@@ -169,6 +169,13 @@ export default function Home() {
       console.log('coin:', coins);
       setCoinType(coins.map((c) => c.coinType)); // coinType 清單
 
+     const dedupFirst = (coins: { coinType: string }[]) => {
+        const seen = new Set<string>();
+        return coins.filter(it => (seen.has(it.coinType) ? false : (seen.add(it.coinType), true)));
+      };
+      console.log('newCoinType',dedupFirst)
+      //setCoinType(newCoinType)
+
       const metas = await Promise.all(
         coins.map(async ({ coinType }) => {
           const meta = await client.getCoinMetadata({ coinType });
