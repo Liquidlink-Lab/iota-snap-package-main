@@ -106,7 +106,7 @@ export function QuickActions() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle> Stake Iota in to Swirl</DialogTitle>
+                  <DialogTitle>Stake Iota into Swirl</DialogTitle>
                   <DialogDescription>Stake Iota</DialogDescription>
                   <Input className="my-5" type="number" placeholder="Amount" />
 

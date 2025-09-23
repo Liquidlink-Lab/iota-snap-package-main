@@ -15,7 +15,7 @@ export const useSend = () => {
   const tx = useTx();
 
   function requireAccount() {
-    if (!account?.address) throw new Error("請先連接錢包");
+    if (!account?.address) throw new Error("Please connect your wallet first");
     return account.address;
   }
 

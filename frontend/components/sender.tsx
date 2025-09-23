@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -36,9 +37,22 @@ export const Sender = () => {
   const isGasLike = token?.coinType === BASE_TOKEN_TYPE;
   const send = useSend();
 
+  const amountInSmallestUnit = useMemo(() => {
+    if (!sendAmount || !token) return 0n;
+    const decimals = token.decimals || 0;
+    try {
+      const amount = Number(sendAmount);
+      if (isNaN(amount) || amount < 0) return 0n;
+      return BigInt(Math.round(amount * 10 ** decimals));
+    } catch (error) {
+      console.error("Error converting amount to smallest unit:", error);
+      return 0n;
+    }
+  }, [sendAmount, token]);
+
   async function handleSend() {
     try {
-      if (!recipient) throw new Error("請填寫收款地址");
+      if (!recipient) throw new Error("Please fill in the recipient address");
 
       if (isGasLike && isSendAll) {
         return await send.payAllIota({ recipient });
@@ -47,13 +61,6 @@ export const Sender = () => {
       if (!isGasLike && isSendAll) {
         return await send.sendAllNonIota({ coinType: tokenType, recipient });
       }
-
-      // The amount is a string, and it can be a float number.
-      // We need to convert it to the smallest unit.
-      const decimals = token?.decimals || 0;
-      const amountInSmallestUnit = BigInt(
-        Math.round(Number(sendAmount) * 10 ** decimals)
-      );
 
       if (isGasLike && !isSendAll) {
         return await send.sendIota({
@@ -104,6 +111,10 @@ export const Sender = () => {
             >
               Max
             </Button>
+          </div>
+          <div className="text-sm text-muted-foreground -mt-4 px-1">
+            In smallest unit:{" "}
+            {new Intl.NumberFormat("en-US").format(amountInSmallestUnit)}
           </div>
           <Input
             className="my-5"

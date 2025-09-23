@@ -33,7 +33,7 @@ const useTx = () => {
       sum += BigInt(c.balance);
       if (sum >= targetAmount) return { picked, total: sum };
     }
-    throw new Error("餘額不足：可用餘額 < 目標金額");
+    throw new Error("Insufficient balance");
   }
 
   /** 非基礎幣：把該幣種所有 coins 合併成一顆並整顆轉出（send-all） */
@@ -47,7 +47,7 @@ const useTx = () => {
     coinType: string;
   }) {
     const coins = await getAllCoinsOfType(owner, coinType);
-    if (!coins.length) throw new Error(`你沒有 ${coinType} 可以發送`);
+    if (!coins.length) throw new Error(`You have no ${coinType} to send`);
 
     const tx = new Transaction();
     const primary = tx.object(coins[0].coinObjectId);
@@ -66,7 +66,8 @@ const useTx = () => {
     recipient: string;
   }) {
     const baseCoins = await getAllCoinsOfType(owner, BASE_TOKEN_TYPE);
-    if (baseCoins.length === 0) throw new Error("沒有可用的基礎幣可發送");
+    if (baseCoins.length === 0)
+      throw new Error("No available base coins to send");
 
     const tx = new Transaction();
     tx.setGasPayment(
@@ -95,10 +96,11 @@ const useTx = () => {
     amount: bigint | number;
   }) {
     const amt = BigInt(amount);
-    if (amt <= 0n) throw new Error("amount 需為正整數（最小單位）");
+    if (amt <= 0n)
+      throw new Error("amount must be a positive integer (in smallest units)");
 
     const coins = await getAllCoinsOfType(owner, coinType);
-    if (!coins.length) throw new Error(`你沒有 ${coinType}`);
+    if (!coins.length) throw new Error(`You do not have ${coinType}`);
 
     const sorted = [...coins].sort((a, b) =>
       Number(BigInt(b.balance) - BigInt(a.balance))
@@ -126,10 +128,10 @@ const useTx = () => {
     amount: bigint | number;
   }) {
     const amt = BigInt(amount);
-    if (amt <= 0n) throw new Error("amount 需為正整數（最小單位）");
+    if (amt <= 0n) throw new Error("amount must be a positive integer");
 
     const baseCoins = await getAllCoinsOfType(owner, BASE_TOKEN_TYPE);
-    if (!baseCoins.length) throw new Error("沒有基礎幣");
+    if (!baseCoins.length) throw new Error("No base coins");
 
     const sorted = [...baseCoins].sort((a, b) =>
       Number(BigInt(b.balance) - BigInt(a.balance))
