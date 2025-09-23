@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { toast } from "sonner";
-import { Center, Tabs } from "@mantine/core";
+import { Avatar, Center, Tabs } from "@mantine/core";
 import useBalance from "@/hooks/useBalance";
 import useTokens from "@/hooks/useTokens";
 import useSwirlStat from "@/hooks/useSwirlStat";
@@ -151,7 +151,10 @@ export function QuickActions() {
                   className="h-auto p-4 flex-col w-full gap-2 bg-transparent"
                   disabled={network !== "mainnet"}
                 >
-                  <Airplay className="h-5 w-5 text-primary" />
+                  <Avatar
+                    size="xs"
+                    src="https://strapi-dev.scand.app/uploads/Swirl_logo_921e0c56bc.jpg"
+                  />
                   <span className="text-sm font-medium">Stake</span>
                 </Button>
               </DialogTrigger>
