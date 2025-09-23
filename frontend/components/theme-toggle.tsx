@@ -1,14 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useTheme } from 'next-themes';
-import { Moon, Sun } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
+import { Moon, Sun } from "lucide-react";
 
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useMantineColorScheme } from "@mantine/core";
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
+  const { setColorScheme } = useMantineColorScheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -16,7 +18,8 @@ export function ThemeToggle() {
   }, []);
 
   const toggleTheme = () => {
-    const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
+    const nextTheme = resolvedTheme === "dark" ? "light" : "dark";
+    setColorScheme(nextTheme);
     setTheme(nextTheme);
   };
 
@@ -32,14 +35,14 @@ export function ThemeToggle() {
         <>
           <Sun
             className={cn(
-              'h-4 w-4',
-              resolvedTheme === 'dark' ? 'hidden' : 'block',
+              "h-4 w-4",
+              resolvedTheme === "dark" ? "hidden" : "block"
             )}
           />
           <Moon
             className={cn(
-              'h-4 w-4',
-              resolvedTheme !== 'dark' ? 'hidden' : 'block',
+              "h-4 w-4",
+              resolvedTheme !== "dark" ? "hidden" : "block"
             )}
           />
         </>
