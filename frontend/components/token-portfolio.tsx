@@ -29,7 +29,7 @@ export function TokenPortfolio() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-lg font-[var(--font-dm-sans)]">
-              Token Portfolio
+              Token List
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               Your cryptocurrency holdings

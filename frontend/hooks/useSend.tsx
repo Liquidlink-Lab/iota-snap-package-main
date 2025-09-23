@@ -8,6 +8,8 @@ import { useAppStore } from "@/stores/app";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
+type ActionLabel = "Stake" | "Unstake" | "Transfer";
+
 export const useSend = () => {
   const account = useCurrentAccount();
   const { network } = useAppStore();
@@ -25,10 +27,14 @@ export const useSend = () => {
     return tx.estimateGas({ tx: built, sender });
   }
 
-  async function execute(txBuilder: () => Promise<Transaction>) {
+  /** 統一帶動作名稱的 execute：自動切換成功/失敗提示文案 */
+  async function executeLabeled(
+    action: ActionLabel,
+    txBuilder: () => Promise<Transaction>
+  ) {
     requireAccount();
     const built = await txBuilder();
-    // 交給 dapp-kit 進行 build + 簽名 + 送出
+
     return await signAndExecute(
       {
         transaction: built,
@@ -36,15 +42,20 @@ export const useSend = () => {
       },
       {
         onSuccess: (result) => {
-          console.log("executed transaction", result);
+          const digest = result?.digest ?? "";
+          const checkpoint = (result as any)?.checkpoint;
+          console.log(`[${action}] executed`, { digest, checkpoint, result });
+
           toast.success(
             <div className="flex items-center gap-2">
-              <span>Transaction executed successfully</span>
+              <span>
+                {action} successful{digest ? ` · ${digest.slice(0, 8)}…` : ""}
+              </span>
               <Button
                 variant="outline"
                 onClick={() =>
                   window.open(
-                    `https://explorer.iota.org/txblock/${result.digest}?network=${network}`,
+                    `https://explorer.iota.org/txblock/${digest}?network=${network}`,
                     "_blank"
                   )
                 }
@@ -55,15 +66,15 @@ export const useSend = () => {
           );
         },
         onError: (error) => {
-          console.error(error);
-          toast.error("Transaction failed");
+          console.error(`[${action}] failed`, error);
+          toast.error(`${action} failed`);
         },
       }
     );
   }
 
   return {
-    // 實際送出
+    // ========= 實際送出 =========
     sendAllNonIota: async ({
       coinType,
       recipient,
@@ -71,7 +82,7 @@ export const useSend = () => {
       coinType: string;
       recipient: string;
     }) =>
-      execute(() =>
+      executeLabeled("Transfer", () =>
         tx.buildNonIotaSendAllPTB({
           owner: requireAccount(),
           coinType,
@@ -80,7 +91,7 @@ export const useSend = () => {
       ),
 
     payAllIota: async ({ recipient }: { recipient: string }) =>
-      execute(() =>
+      executeLabeled("Transfer", () =>
         tx.buildIotaPayAllLikePTB({ owner: requireAccount(), recipient })
       ),
 
@@ -93,7 +104,7 @@ export const useSend = () => {
       recipient: string;
       amount: bigint | number;
     }) =>
-      execute(() =>
+      executeLabeled("Transfer", () =>
         tx.buildNonIotaPayPTB({
           owner: requireAccount(),
           coinType,
@@ -109,11 +120,38 @@ export const useSend = () => {
       recipient: string;
       amount: bigint | number;
     }) =>
-      execute(() =>
+      executeLabeled("Transfer", () =>
         tx.buildIotaPayPTB({ owner: requireAccount(), recipient, amount })
       ),
 
-    // 只估 gas（不送出）
+    // ----- NativePool: stake / unstake -----
+    /** 已有一顆 Coin<IOTA> 直接質押 */
+    stakeWithCoin: async ({ iotaCoinId }: { iotaCoinId: string }) =>
+      executeLabeled("Stake", () => tx.buildStakePTB({ iotaCoinId })),
+
+    /** 一鍵：從 IOTA 拆出 amount 後質押 */
+    stakeWithSplit: async ({ amount }: { amount: bigint | number }) =>
+      executeLabeled("Stake", () =>
+        tx.buildStakeWithSplitPTB({ owner: requireAccount(), amount })
+      ),
+
+    /** 已有某顆 Coin<CERT> 直接解質押 */
+    unstakeWithCert: async ({ certCoinId }: { certCoinId: string }) =>
+      executeLabeled("Unstake", () => tx.buildUnstakePTB({ certCoinId })),
+
+    /** 合併帳上所有 CERT 後「全額」解質押 */
+    unstakeAll: async () =>
+      executeLabeled("Unstake", () =>
+        tx.buildUnstakeWithMergePTB({ owner: requireAccount() })
+      ),
+
+    /** 拆出指定 amount 的 CERT 後「部分」解質押 */
+    unstakeWithSplit: async ({ amount }: { amount: bigint | number }) =>
+      executeLabeled("Unstake", () =>
+        tx.buildUnstakeWithSplitPTB({ owner: requireAccount(), amount })
+      ),
+
+    // ========= 只估 gas =========
     estimateSendAllNonIota: async ({
       coinType,
       recipient,
@@ -161,6 +199,26 @@ export const useSend = () => {
     }) =>
       estimate(() =>
         tx.buildIotaPayPTB({ owner: requireAccount(), recipient, amount })
+      ),
+
+    // ----- NativePool: gas estimate -----
+    estimateStakeWithCoin: async ({ iotaCoinId }: { iotaCoinId: string }) =>
+      estimate(() => tx.buildStakePTB({ iotaCoinId })),
+
+    estimateStakeWithSplit: async ({ amount }: { amount: bigint | number }) =>
+      estimate(() =>
+        tx.buildStakeWithSplitPTB({ owner: requireAccount(), amount })
+      ),
+
+    estimateUnstakeWithCert: async ({ certCoinId }: { certCoinId: string }) =>
+      estimate(() => tx.buildUnstakePTB({ certCoinId })),
+
+    estimateUnstakeAll: async () =>
+      estimate(() => tx.buildUnstakeWithMergePTB({ owner: requireAccount() })),
+
+    estimateUnstakeWithSplit: async ({ amount }: { amount: bigint | number }) =>
+      estimate(() =>
+        tx.buildUnstakeWithSplitPTB({ owner: requireAccount(), amount })
       ),
   };
 };
