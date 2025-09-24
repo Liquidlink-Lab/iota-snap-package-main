@@ -92,7 +92,6 @@ export function QuickActions() {
         amount: amountInSmallestUnit,
       });
       console.log("🚀 ~ handleStake ~ result:", result);
-      toast.success("Stake estimation successful!");
     } catch (e: any) {
       toast.error(e.message);
     }
@@ -104,7 +103,6 @@ export function QuickActions() {
         amount: amountInSmallestUnit,
       });
       console.log("🚀 ~ handleUnstake ~ result:", result);
-      toast.success("Unstake estimation successful!");
     } catch (e: any) {
       toast.error(e.message);
     }
@@ -164,18 +162,16 @@ export function QuickActions() {
                   <DialogDescription>
                     Stake IOTA to get stIOTA, or unstake stIOTA to get back
                     IOTA.
-                    <Center className="mt-4">
-                      <Link href="https://swirlstake.com/" target="_blank">
-                        <Image
-                          className="invert dark:invert-0"
-                          src="https://swirlstake.com/assets/logo-with-name.svg"
-                          width={150}
-                          height={50}
-                          alt="SwirlStake Logo"
-                          priority
-                        />
-                      </Link>
-                    </Center>
+                    <Link href="https://swirlstake.com/" target="_blank">
+                      <Image
+                        className="invert dark:invert-0 mx-auto mt-8"
+                        src="https://swirlstake.com/assets/logo-with-name.svg"
+                        width={150}
+                        height={50}
+                        alt="SwirlStake Logo"
+                        priority
+                      />
+                    </Link>
                   </DialogDescription>
                 </DialogHeader>
                 <Tabs defaultValue="stake" className="mt-2" color="gray">
@@ -184,13 +180,17 @@ export function QuickActions() {
                     <Tabs.Tab value="unstake">Unstake</Tabs.Tab>
                   </Tabs.List>
                   <Tabs.Panel value="stake" pt="md">
-                    <div className="relative my-5">
+                    <div className="flex justify-end text-sm text-muted-foreground pr-1">
+                      Balance: {iotaBalance ? Number(iotaBalance) : "0"}
+                    </div>
+                    <div className="relative mb-5">
                       <Input
                         type="number"
                         placeholder="Amount to Stake"
                         value={sendAmount}
                         onChange={(e) => setSendAmount(e.target.value)}
                         className="pr-12"
+                        min={1}
                       />
                       <Button
                         variant="ghost"
@@ -232,13 +232,17 @@ export function QuickActions() {
                     </DialogFooter>
                   </Tabs.Panel>
                   <Tabs.Panel value="unstake" pt="md">
-                    <div className="relative my-5">
+                    <div className="flex justify-end text-sm text-muted-foreground pr-1">
+                      Balance: {stakedBalance ? Number(stakedBalance) : "0"}
+                    </div>
+                    <div className="relative mb-5">
                       <Input
                         type="number"
                         placeholder="Amount to Unstake"
                         value={sendAmount}
                         onChange={(e) => setSendAmount(e.target.value)}
                         className="pr-12"
+                        min={1}
                       />
                       <Button
                         variant="ghost"

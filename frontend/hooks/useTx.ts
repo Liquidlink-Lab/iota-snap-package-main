@@ -104,8 +104,7 @@ const useTx = () => {
     amount: bigint | number;
   }) {
     const amt = BigInt(amount);
-    if (amt <= 0n)
-      throw new Error("amount must be a positive integer (in smallest units)");
+    if (amt <= 0n) throw new Error("amount must be a positive integer");
 
     const coins = await getAllCoinsOfType(owner, coinType);
     if (!coins.length) throw new Error(`You do not have ${coinType}`);
@@ -195,7 +194,7 @@ const useTx = () => {
     amount: bigint | number; // IOTA 最小單位
   }) {
     const amt = BigInt(amount);
-    if (amt <= 0n) throw new Error("amount must be a positive integer");
+    if (amt < 1000000000n) throw new Error("minimum amount: 1 IOTA");
 
     const baseCoins = await getAllCoinsOfType(owner, BASE_TOKEN_TYPE);
     if (baseCoins.length === 0) throw new Error("No base coins");
@@ -354,7 +353,7 @@ const useTx = () => {
     amount: bigint | number; // CERT 的最小單位數量
   }) {
     const amt = BigInt(amount);
-    if (amt <= 0n) throw new Error("amount must be a positive integer");
+    if (amt < 1000000000n) throw new Error("minimum amount: 1 stIOTA");
 
     // 1) 取得 CERT coins
     const certCoins = await getAllCoinsOfType(owner, CERT_COIN_TYPE);

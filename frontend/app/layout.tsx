@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   title: "IOTA Snap Wallet",
   description: "Connect to IOTA network with Metamask snap",
   openGraph: {
-    images: "/Iota-snap.png",
+    images: "/iota-snap-logo.png",
   },
 };
 
@@ -39,7 +39,7 @@ export default function RootLayout({
     <html lang="en" {...mantineHtmlProps}>
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
-        <link rel="icon" href="/Iota-snap.png" sizes="any" />
+        <link rel="icon" href="/iota-snap-logo.png" sizes="any" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
