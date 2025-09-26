@@ -17,12 +17,9 @@ import {
   Wallet,
   WalletAccount,
   getWallets,
-  Wallets,
 } from "@iota/wallet-standard";
-import { MetaMaskInpageProvider } from "@metamask/providers";
-import detectEthereumProvider from "@metamask/detect-provider";
-
 import { ICON } from "./icon";
+import { MetaMaskInpageProvider } from "@metamask/providers";
 import {
   SerializedAdminSetFullnodeUrl,
   SerializedWalletAccount,
@@ -33,37 +30,44 @@ import {
   serializeIotaSignTransactionBlockInput,
 } from "./types";
 import { convertError } from "./errors";
+import { getMetaMaskProvider } from "./metamask";
 
 export * from "./types";
 export * from "./errors";
+export { getMetaMaskProvider } from "./metamask";
+export type { MetaMaskStatus, MetaMaskProviderInfo } from "./metamask";
 
-type BaseProvider = MetaMaskInpageProvider;
-
-// export const IOTA_SNAP_ORIGIN = "npm:@3mate/iota-metamask-snap";
-// export const IOTA_SNAP_ORIGIN = "local:http://localhost:5050";
-export const IOTA_SNAP_ORIGIN = "npm:@liquidlink-lab/iota-metamask-snap";
+export const SNAP_ORIGIN = "npm:@liquidlink-lab/iota-metamask-snap";
 export const SNAP_VERSION = "^0.0.8";
 
-export function registerIotaSnapWallet(wallets: Wallets) {
-  console.log("registerIotaSnapWallet");
+type IotaSignMessageFeature = {
+  "iota:signMessage": {
+    version: "1.0.0";
+    signMessage: IotaSignPersonalMessageMethod;
+  };
+};
 
+export function registerIotaSnapWallet(): IotaSnapWallet {
+  const wallets = getWallets();
   for (const wallet of wallets.get()) {
     if (wallet.name === IotaSnapWallet.NAME) {
       console.warn("IotaSnapWallet already registered");
-      return;
+      return wallet as IotaSnapWallet;
     }
   }
 
-  wallets.register(new IotaSnapWallet());
+  const wallet = new IotaSnapWallet();
+  wallets.register(wallet);
+  return wallet;
 }
 
 export async function getAccounts(
-  provider: BaseProvider
+  provider: MetaMaskInpageProvider
 ): Promise<ReadonlyWalletAccount[]> {
   const res = (await provider.request({
     method: "wallet_invokeSnap",
     params: {
-      snapId: IOTA_SNAP_ORIGIN,
+      snapId: SNAP_ORIGIN,
       request: {
         method: "getAccounts",
       },
@@ -75,11 +79,11 @@ export async function getAccounts(
   );
 }
 
-export async function admin_getStoredState(provider: BaseProvider) {
+export async function admin_getStoredState(provider: MetaMaskInpageProvider) {
   const res = (await provider.request({
     method: "wallet_invokeSnap",
     params: {
-      snapId: IOTA_SNAP_ORIGIN,
+      snapId: SNAP_ORIGIN,
       request: {
         method: "admin_getStoredState",
       },
@@ -90,7 +94,7 @@ export async function admin_getStoredState(provider: BaseProvider) {
 }
 
 export async function admin_setFullnodeUrl(
-  provider: BaseProvider,
+  provider: MetaMaskInpageProvider,
   network: "mainnet" | "testnet" | "devnet" | "localnet",
   url: string
 ) {
@@ -101,7 +105,7 @@ export async function admin_setFullnodeUrl(
   await provider.request({
     method: "wallet_invokeSnap",
     params: {
-      snapId: IOTA_SNAP_ORIGIN,
+      snapId: SNAP_ORIGIN,
       request: {
         method: "admin_setFullnodeUrl",
         params: JSON.parse(JSON.stringify(params)),
@@ -111,7 +115,7 @@ export async function admin_setFullnodeUrl(
 }
 
 export async function signPersonalMessage(
-  provider: BaseProvider,
+  provider: MetaMaskInpageProvider,
   messageInput: IotaSignPersonalMessageInput
 ): Promise<IotaSignPersonalMessageOutput> {
   const serialized = serializeIotaSignMessageInput(messageInput);
@@ -120,7 +124,7 @@ export async function signPersonalMessage(
     return (await provider.request({
       method: "wallet_invokeSnap",
       params: {
-        snapId: IOTA_SNAP_ORIGIN,
+        snapId: SNAP_ORIGIN,
         request: {
           method: "signPersonalMessage",
           params: JSON.parse(JSON.stringify(serialized)),
@@ -133,14 +137,14 @@ export async function signPersonalMessage(
 }
 
 export async function signMessage(
-  provider: BaseProvider,
+  provider: MetaMaskInpageProvider,
   messageInput: IotaSignPersonalMessageInput
 ): Promise<IotaSignPersonalMessageOutput> {
   return await signPersonalMessage(provider, messageInput);
 }
 
 export async function signTransaction(
-  provider: BaseProvider,
+  provider: MetaMaskInpageProvider,
   transactionInput: IotaSignTransactionInput
 ): Promise<IotaSignTransactionOutput> {
   const serialized = await serializeIotaSignTransactionBlockInput(
@@ -151,7 +155,7 @@ export async function signTransaction(
     return (await provider.request({
       method: "wallet_invokeSnap",
       params: {
-        snapId: IOTA_SNAP_ORIGIN,
+        snapId: SNAP_ORIGIN,
         request: {
           method: "signTransaction",
           params: JSON.parse(JSON.stringify(serialized)),
@@ -164,7 +168,7 @@ export async function signTransaction(
 }
 
 export async function signAndExecuteTransaction(
-  provider: BaseProvider,
+  provider: MetaMaskInpageProvider,
   transactionInput: IotaSignTransactionInput
 ): Promise<IotaSignAndExecuteTransactionOutput> {
   const serialized = await serializeIotaSignAndExecuteTransactionBlockInput(
@@ -175,7 +179,7 @@ export async function signAndExecuteTransaction(
     return (await provider.request({
       method: "wallet_invokeSnap",
       params: {
-        snapId: IOTA_SNAP_ORIGIN,
+        snapId: SNAP_ORIGIN,
         request: {
           method: "signAndExecuteTransaction",
           params: JSON.parse(JSON.stringify(serialized)),
@@ -187,62 +191,12 @@ export async function signAndExecuteTransaction(
   }
 }
 
-export interface MetaMaskStatus {
-  available: boolean;
-  version?: string;
-  supportsSnaps: boolean;
-  iotaSnapInstalled: boolean;
-}
-
-export async function metaMaskAvailable(): Promise<MetaMaskStatus> {
-  const provider = (await detectEthereumProvider({
-    silent: true,
-  })) as BaseProvider | null;
-  if (!provider) {
-    return {
-      available: false,
-      supportsSnaps: false,
-      iotaSnapInstalled: false,
-    };
-  }
-  if (!provider.isMetaMask) {
-    return {
-      available: false,
-      iotaSnapInstalled: false,
-      supportsSnaps: false,
-    };
-  }
-  try {
-    const version = await provider.request<string>({
-      method: "web3_clientVersion",
-    });
-    const snaps = await provider.request<Record<string, unknown>>({
-      method: "wallet_getSnaps",
-    });
-    const iotaSnapInstalled =
-      !!snaps && "npm:@3mate/iota-metamask-snap" in snaps;
-
-    return {
-      available: true,
-      version: version!,
-      supportsSnaps: true,
-      iotaSnapInstalled,
-    };
-  } catch (e) {
-    console.warn(e);
-    return {
-      available: true,
-      supportsSnaps: false,
-      iotaSnapInstalled: false,
-    };
-  }
-}
-
 export class IotaSnapWallet implements Wallet {
   static NAME = "Iota MetaMask Snap";
   #connecting: boolean;
   #connected: boolean;
 
+  #provider: MetaMaskInpageProvider | null = null;
   #accounts: WalletAccount[] | null = null;
 
   constructor() {
@@ -259,7 +213,7 @@ export class IotaSnapWallet implements Wallet {
   }
 
   get icon() {
-    return ICON as `data:image/svg+xml;base64,${string}`;
+    return ICON;
   }
 
   get chains() {
@@ -286,39 +240,40 @@ export class IotaSnapWallet implements Wallet {
   get features(): StandardConnectFeature &
     StandardDisconnectFeature &
     IotaFeatures &
-    StandardEventsFeature {
+    StandardEventsFeature &
+    IotaSignMessageFeature {
     return {
       "standard:connect": {
-        version: "1.0.0" as any,
+        version: "1.0.0",
         connect: this.#connect,
       },
       "standard:disconnect": {
-        version: "1.0.0" as any,
+        version: "1.0.0",
         disconnect: this.#disconnect,
       },
       "iota:signPersonalMessage": {
-        version: "1.0.0" as any,
+        version: "1.0.0",
         signPersonalMessage: this.#signPersonalMessage,
       },
       "iota:signMessage": {
-        version: "1.0.0" as any,
+        version: "1.0.0",
         signMessage: this.#signMessage,
       },
       "iota:signTransaction": {
-        version: "1.0.0" as any,
+        version: "2.0.0",
         signTransaction: this.#signTransaction,
       },
       "iota:signAndExecuteTransaction": {
-        version: "1.0.0" as any,
+        version: "2.0.0",
         signAndExecuteTransaction: this.#signAndExecuteTransaction,
       },
       "standard:events": {
-        version: "1.0.0" as any,
+        version: "1.0.0",
         on: () => {
           return () => {};
         },
       },
-    } as any;
+    };
   }
 
   #connect: StandardConnectMethod = async () => {
@@ -330,27 +285,21 @@ export class IotaSnapWallet implements Wallet {
     this.#connected = false;
 
     try {
-      const provider = (await detectEthereumProvider({
-        silent: true,
-      })) as BaseProvider | null;
-      if (!provider) {
-        throw new Error("MetaMask not detected!");
-      }
-
-      const mmStatus = await metaMaskAvailable();
-      if (!mmStatus.available) {
+      const { available, provider } = await getMetaMaskProvider();
+      if (!available) {
         throw new Error("MetaMask not detected!");
       }
 
       await provider.request({
         method: "wallet_requestSnaps",
         params: {
-          [IOTA_SNAP_ORIGIN]: {
+          [SNAP_ORIGIN]: {
             version: SNAP_VERSION,
           },
         },
       });
 
+      this.#provider = provider;
       this.#accounts = await getAccounts(provider);
 
       this.#connecting = false;
@@ -370,49 +319,46 @@ export class IotaSnapWallet implements Wallet {
     this.#connecting = false;
     this.#connected = false;
     this.#accounts = null;
+    this.#provider = null;
   };
 
   #signPersonalMessage: IotaSignPersonalMessageMethod = async (
     messageInput
   ) => {
-    const provider = (await detectEthereumProvider({
-      silent: true,
-    })) as BaseProvider | null;
-    if (!provider) {
-      throw new Error("MetaMask not detected!");
+    if (!this.#provider) {
+      throw new Error(
+        "Not connected: Please connect to MetaMask Iota Snap before signing a personal message."
+      );
     }
-    return signPersonalMessage(provider, messageInput);
+    return signPersonalMessage(this.#provider, messageInput);
   };
 
   #signMessage: IotaSignPersonalMessageMethod = async (messageInput) => {
-    const provider = (await detectEthereumProvider({
-      silent: true,
-    })) as BaseProvider | null;
-    if (!provider) {
-      throw new Error("MetaMask not detected!");
+    if (!this.#provider) {
+      throw new Error(
+        "Not connected: Please connect to MetaMask Iota Snap before signing a message."
+      );
     }
-    return signMessage(provider, messageInput);
+    return signMessage(this.#provider, messageInput);
   };
 
   #signTransaction: IotaSignTransactionMethod = async (transactionInput) => {
-    const provider = (await detectEthereumProvider({
-      silent: true,
-    })) as BaseProvider | null;
-    if (!provider) {
-      throw new Error("MetaMask not detected!");
+    if (!this.#provider) {
+      throw new Error(
+        "Not connected: Please connect to MetaMask Iota Snap before signing a transaction block."
+      );
     }
-    return signTransaction(provider, transactionInput);
+    return signTransaction(this.#provider, transactionInput);
   };
 
   #signAndExecuteTransaction: IotaSignAndExecuteTransactionMethod = async (
     transactionInput
   ) => {
-    const provider = (await detectEthereumProvider({
-      silent: true,
-    })) as BaseProvider | null;
-    if (!provider) {
-      throw new Error("MetaMask not detected!");
+    if (!this.#provider) {
+      throw new Error(
+        "Not connected: Please connect to MetaMask Iota Snap before signing and executing a transaction block."
+      );
     }
-    return signAndExecuteTransaction(provider, transactionInput);
+    return signAndExecuteTransaction(this.#provider, transactionInput);
   };
 }

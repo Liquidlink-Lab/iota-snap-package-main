@@ -1,6 +1,6 @@
 {
   "name": "@liquidlink-lab/iota-snap-for-metamask",
-  "version": "1.6.3",
+  "version": "1.7.0",
   "description": "A MetaMask Snap integration for IOTA Wallet Standard",
   "license": "ISC",
   "author": "liquidlink.io@gmail.com",
@@ -31,10 +31,10 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@iota/iota-sdk": "^1.4.0",
-    "@iota/wallet-standard": "^0.2.12",
+    "@iota/iota-sdk": "^1.6.1",
+    "@iota/wallet-standard": "^0.2.15",
     "@metamask/detect-provider": "^2.0.0",
-    "@metamask/providers": "^22.1.0"
+    "@metamask/providers": "^22.1.1"
   },
   "sideEffects": false,
   "keywords": [

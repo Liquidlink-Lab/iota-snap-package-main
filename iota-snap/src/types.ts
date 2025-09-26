@@ -1,6 +1,6 @@
 import { IotaTransactionBlockResponseOptions } from "@iota/iota-sdk/client";
 import { Transaction } from "@iota/iota-sdk/transactions";
-import { fromB64, toB64 } from "@iota/iota-sdk/utils";
+import { fromBase64, toBase64 } from "@iota/iota-sdk/utils";
 import {
   IotaSignAndExecuteTransactionInput,
   IotaSignPersonalMessageInput,
@@ -30,7 +30,7 @@ export function serializeWalletAccount(
 ): SerializedWalletAccount {
   return {
     address: account.address,
-    publicKey: toB64(account.publicKey as Uint8Array),
+    publicKey: toBase64(account.publicKey as Uint8Array),
     features: [...account.features],
     chains: [...account.chains],
     label: account.label,
@@ -43,7 +43,7 @@ export function deserializeWalletAccount(
 ): WalletAccount {
   return {
     address: account.address,
-    publicKey: fromB64(account.publicKey),
+    publicKey: fromBase64(account.publicKey),
     chains: account.chains.map((chain) => chain as `${string}:${string}`),
     features: account.features.map(
       (feature) => feature as `${string}:${string}`
@@ -64,7 +64,7 @@ export function serializeIotaSignMessageInput(
   input: IotaSignPersonalMessageInput
 ): SerializedIotaSignMessageInput {
   return {
-    message: toB64(input.message),
+    message: toBase64(input.message),
     account: serializeWalletAccount(input.account),
   };
 }
@@ -73,7 +73,7 @@ export function deserializeIotaSignMessageInput(
   input: SerializedIotaSignMessageInput
 ): IotaSignPersonalMessageInput {
   return {
-    message: fromB64(input.message),
+    message: fromBase64(input.message),
     account: deserializeWalletAccount(input.account),
   };
 }
