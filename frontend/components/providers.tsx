@@ -26,11 +26,7 @@ const DappProvider = ({ children }: { children: ReactNode }) => {
           network={network}
           onNetworkChange={(network) => console.log(network)}
         >
-          <WalletProvider
-            autoConnect={true}
-            storageKey="iota-wallet"
-            preferredWallets={["IOTA Wallet"]}
-          >
+          <WalletProvider autoConnect preferredWallets={["IOTA Snap Wallet"]}>
             {children}
             <Toaster />
           </WalletProvider>

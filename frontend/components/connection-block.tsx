@@ -10,28 +10,12 @@ import {
 } from "./ui/card";
 import { ConnectModal, useCurrentWallet } from "@iota/dapp-kit";
 import { Button } from "./ui/button";
-import { useEffect, useMemo } from "react";
-import {
-  metaMaskAvailable,
-  registerIotaSnapWallet,
-} from "@liquidlink-lab/iota-snap-for-metamask";
-import { getWallets } from "@iota/wallet-standard";
+import { registerIotaSnapWallet } from "@liquidlink-lab/iota-snap-for-metamask";
+
+registerIotaSnapWallet();
 
 export const ConnectionBlock = () => {
   const { isConnected } = useCurrentWallet();
-  const wallets = useMemo(() => getWallets(), []);
-
-  useEffect(() => {
-    const checkMetaMask = async () => {
-      try {
-        await metaMaskAvailable();
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    checkMetaMask();
-    registerIotaSnapWallet(wallets);
-  }, [wallets]);
 
   if (isConnected) {
     return null;

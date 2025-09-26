@@ -1,6 +1,10 @@
 "use client";
 
-import { useCurrentAccount, useDisconnectWallet } from "@iota/dapp-kit";
+import {
+  useCurrentAccount,
+  useCurrentWallet,
+  useDisconnectWallet,
+} from "@iota/dapp-kit";
 import {
   Card,
   CardContent,
@@ -14,9 +18,11 @@ import { QuickActions } from "./quick-actions";
 import { TokenPortfolio } from "./token-portfolio";
 import { Button } from "./ui/button";
 import { Sender } from "./sender";
+import { Avatar } from "@mantine/core";
 
 export const Dashboard = () => {
   const currentAccount = useCurrentAccount();
+  const { currentWallet } = useCurrentWallet();
   const { mutateAsync: disconnectAsync } = useDisconnectWallet();
 
   if (!currentAccount) {
@@ -41,6 +47,12 @@ export const Dashboard = () => {
                 </CardDescription>
               </div>
             </div>
+            <Avatar
+              radius="xl"
+              size="md"
+              src={currentWallet?.icon}
+              alt={currentWallet?.name}
+            />
           </div>
         </CardHeader>
         <CardContent>
