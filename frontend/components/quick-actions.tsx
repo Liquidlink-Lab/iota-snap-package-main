@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { toast } from "sonner";
-import { Avatar, Center, Tabs } from "@mantine/core";
+import { Avatar, Tabs } from "@mantine/core";
 import useBalance from "@/hooks/useBalance";
 import useTokens from "@/hooks/useTokens";
 import useSwirlStat from "@/hooks/useSwirlStat";
@@ -10,7 +10,7 @@ import Image from "next/image";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Send, BookOpenText, Airplay, Plus } from "lucide-react";
+import { Send, BookOpenText, Plus } from "lucide-react";
 import {
   DialogDescription,
   DialogFooter,
@@ -51,7 +51,9 @@ export function QuickActions() {
   const { amount: iotaBalance } = useBalance({
     address: currentAccount?.address,
   });
-  const { tokens } = useTokens({ address: currentAccount?.address as string });
+  const { tokens, refetch } = useTokens({
+    address: currentAccount?.address as string,
+  });
   const stakedBalance =
     tokens.find((t) => t.symbol === "stIOTA")?.balance || "0";
 
@@ -148,6 +150,7 @@ export function QuickActions() {
                   variant="outline"
                   className="h-auto p-4 flex-col w-full gap-2 bg-transparent"
                   disabled={network !== "mainnet"}
+                  onClick={() => refetch()}
                 >
                   <Avatar
                     size="xs"
