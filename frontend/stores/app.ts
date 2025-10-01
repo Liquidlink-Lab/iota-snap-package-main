@@ -20,7 +20,7 @@ export interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  network: "testnet",
+  network: "mainnet",
   setNetwork: (network) => set({ network }),
   opened: false,
   open: () => set({ opened: true }),
