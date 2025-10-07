@@ -125,24 +125,10 @@ export const useSend = () => {
       ),
 
     // ----- NativePool: stake / unstake -----
-    /** 已有一顆 Coin<IOTA> 直接質押 */
-    stakeWithCoin: async ({ iotaCoinId }: { iotaCoinId: string }) =>
-      executeLabeled("Stake", () => tx.buildStakePTB({ iotaCoinId })),
-
     /** 一鍵：從 IOTA 拆出 amount 後質押 */
     stakeWithSplit: async ({ amount }: { amount: bigint | number }) =>
       executeLabeled("Stake", () =>
         tx.buildStakeWithSplitPTB({ owner: requireAccount(), amount })
-      ),
-
-    /** 已有某顆 Coin<CERT> 直接解質押 */
-    unstakeWithCert: async ({ certCoinId }: { certCoinId: string }) =>
-      executeLabeled("Unstake", () => tx.buildUnstakePTB({ certCoinId })),
-
-    /** 合併帳上所有 CERT 後「全額」解質押 */
-    unstakeAll: async () =>
-      executeLabeled("Unstake", () =>
-        tx.buildUnstakeWithMergePTB({ owner: requireAccount() })
       ),
 
     /** 拆出指定 amount 的 CERT 後「部分」解質押 */
@@ -202,19 +188,10 @@ export const useSend = () => {
       ),
 
     // ----- NativePool: gas estimate -----
-    estimateStakeWithCoin: async ({ iotaCoinId }: { iotaCoinId: string }) =>
-      estimate(() => tx.buildStakePTB({ iotaCoinId })),
-
     estimateStakeWithSplit: async ({ amount }: { amount: bigint | number }) =>
       estimate(() =>
         tx.buildStakeWithSplitPTB({ owner: requireAccount(), amount })
       ),
-
-    estimateUnstakeWithCert: async ({ certCoinId }: { certCoinId: string }) =>
-      estimate(() => tx.buildUnstakePTB({ certCoinId })),
-
-    estimateUnstakeAll: async () =>
-      estimate(() => tx.buildUnstakeWithMergePTB({ owner: requireAccount() })),
 
     estimateUnstakeWithSplit: async ({ amount }: { amount: bigint | number }) =>
       estimate(() =>

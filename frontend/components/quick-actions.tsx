@@ -93,6 +93,7 @@ export function QuickActions() {
       const result = await stakeWithSplit({
         amount: amountInSmallestUnit,
       });
+      refetch();
       console.log("🚀 ~ handleStake ~ result:", result);
     } catch (e: any) {
       toast.error(e.message);
@@ -104,6 +105,7 @@ export function QuickActions() {
       const result = await unstakeWithSplit({
         amount: amountInSmallestUnit,
       });
+      refetch();
       console.log("🚀 ~ handleUnstake ~ result:", result);
     } catch (e: any) {
       toast.error(e.message);

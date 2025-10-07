@@ -32,7 +32,7 @@ export const Sender = () => {
     isSendAll,
   } = useAppStore();
   const currentAccount = useCurrentAccount();
-  const { tokens } = useTokens({ address: currentAccount?.address as string });
+  const { tokens, refetch } = useTokens({ address: currentAccount?.address as string });
   const token = tokens.find((t) => t.coinType === tokenType);
   const isGasLike = token?.coinType === BASE_TOKEN_TYPE;
   const send = useSend();
@@ -78,6 +78,9 @@ export const Sender = () => {
       }
     } catch (e: any) {
       toast.error(e.message);
+    } finally {
+      refetch();
+      close();
     }
   }
 
