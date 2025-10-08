@@ -55,7 +55,7 @@ export const useSend = () => {
                 variant="outline"
                 onClick={() =>
                   window.open(
-                    `https://explorer.iota.org/txblock/${digest}?network=${network}`,
+                    `https://iotascan.com/${network}/tx/${digest}`,
                     "_blank"
                   )
                 }
