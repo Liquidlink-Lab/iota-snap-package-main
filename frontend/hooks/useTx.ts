@@ -12,6 +12,7 @@ import {
 } from "@/lib/config";
 
 const MIN_GAS_BUDGET = 1_000_000n; // 0.001 IOTA
+const MAX_GAS_BUDGET = 50_000_000_000n; // Network-enforced upper bound
 
 // ===== useTx =====
 const useTx = () => {
@@ -221,7 +222,8 @@ const useTx = () => {
       throw new Error("Leave some IOTA for gas. Reduce the amount slightly.");
     if (remainder < MIN_GAS_BUDGET)
       throw new Error("Need at least 0.001 IOTA left to cover gas fees.");
-    tx.setGasBudget(remainder);
+    const gasBudget = remainder > MAX_GAS_BUDGET ? MAX_GAS_BUDGET : remainder;
+    tx.setGasBudget(gasBudget);
 
     const [out] = tx.splitCoins(tx.gas, [tx.pure.u64(amt)]);
     tx.transferObjects([out], tx.pure.address(recipient));
@@ -288,7 +290,8 @@ const useTx = () => {
       throw new Error("Leave some IOTA for gas. Reduce the amount slightly.");
     if (remainder < MIN_GAS_BUDGET)
       throw new Error("Need at least 0.001 IOTA left to cover gas fees.");
-    tx.setGasBudget(remainder);
+    const gasBudget = remainder > MAX_GAS_BUDGET ? MAX_GAS_BUDGET : remainder;
+    tx.setGasBudget(gasBudget);
 
     const [stakeCoin] = tx.splitCoins(tx.gas, [tx.pure.u64(amt)]);
     tx.moveCall({
@@ -355,12 +358,11 @@ const useTx = () => {
         coin,
         balance: BigInt(coin.balance),
       }))
-      .filter(
-        ({ coin, balance }) =>
-          coin.coinObjectId !== picked[0].coinObjectId &&
-          !picked.slice(1).some((c) => c.coinObjectId === coin.coinObjectId)
-            ? balance >= MIN_GAS_BUDGET
-            : balance > MIN_GAS_BUDGET
+      .filter(({ coin, balance }) =>
+        coin.coinObjectId !== picked[0].coinObjectId &&
+        !picked.slice(1).some((c) => c.coinObjectId === coin.coinObjectId)
+          ? balance >= MIN_GAS_BUDGET
+          : balance > MIN_GAS_BUDGET
       )
       .sort((a, b) => Number(b.balance - a.balance))[0]?.coin;
     if (!gasCoin) {
