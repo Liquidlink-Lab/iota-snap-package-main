@@ -30,25 +30,21 @@ export default function Home() {
         </div>
         <Group
           component="footer"
-          className="px-4 py-6 space-between border-t border-border bg-card/30 backdrop-blur-sm"
+          className="px-4 py-6 w-full border-t border-border bg-card/30 backdrop-blur-sm"
         >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                © 2025 IOTA Snap Wallet. Built by Liquidlink.
-              </span>
+          <div className="grid w-full grid-cols-2 items-center gap-4 text-sm text-muted-foreground md:grid-cols-3">
+            <div className="flex items-center justify-center gap-2 col-span-2 text-center md:col-span-1 md:justify-start md:text-left md:justify-self-start">
+              <span>© 2025 IOTA Snap Wallet. Built by Liquidlink.</span>
             </div>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a
-                href="https://www.npmjs.com/package/@liquidlink-lab/iota-metamask-snap"
-                className="hover:text-foreground transition-colors"
-              >
-                Snap Document
-              </a>
-              <a className="hover:text-foreground transition-colors">
-                Contact Liquidlink with liquidlink.io@gmail.com
-              </a>
-            </div>
+            <a
+              href="https://www.npmjs.com/package/@liquidlink-lab/iota-metamask-snap"
+              className="hover:text-foreground transition-colors justify-self-start md:justify-self-center"
+            >
+              Snap Document
+            </a>
+            <a className="hover:text-foreground transition-colors justify-self-end text-right md:justify-self-end">
+              Contact Liquidlink with liquidlink.io@gmail.com
+            </a>
           </div>
         </Group>
       </main>

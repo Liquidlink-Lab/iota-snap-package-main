@@ -1,16 +1,11 @@
 import { useIotaClientQueries, useIotaClientQuery } from "@iota/dapp-kit";
 
-import { getFullnodeUrl, IotaClient } from "@iota/iota-sdk/client";
-
 type CoinRow = {
   coinType: string;
   totalBalance: string; // stringified bigint
 };
 
 const useTokens = ({ address }: { address: string }) => {
-  const client = new IotaClient({ url: getFullnodeUrl("testnet") });
-  client.getAllBalances({ owner: address });
-
   const {
     data: balancesData,
     refetch,

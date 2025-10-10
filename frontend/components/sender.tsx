@@ -55,32 +55,32 @@ export const Sender = () => {
       if (!recipient) throw new Error("Please fill in the recipient address");
 
       if (isGasLike && isSendAll) {
-        return await send.payAllIota({ recipient });
+        await send.payAllIota({ recipient });
       }
 
       if (!isGasLike && isSendAll) {
-        return await send.sendAllNonIota({ coinType: tokenType, recipient });
+        await send.sendAllNonIota({ coinType: tokenType, recipient });
       }
 
       if (isGasLike && !isSendAll) {
-        return await send.sendIota({
+        await send.sendIota({
           recipient,
           amount: amountInSmallestUnit,
         });
       }
 
       if (!isGasLike && !isSendAll) {
-        return await send.sendNonIota({
+        await send.sendNonIota({
           coinType: tokenType,
           recipient,
           amount: amountInSmallestUnit,
         });
       }
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
+
       refetch();
       close();
+    } catch (e: any) {
+      toast.error(e.message);
     }
   }
 

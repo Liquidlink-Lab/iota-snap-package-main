@@ -1,17 +1,20 @@
 import {
   useCurrentAccount,
+  useIotaClient,
   useSignAndExecuteTransaction,
 } from "@iota/dapp-kit";
-import { Transaction } from "@iota/iota-sdk/transactions";
+import type { Transaction } from "@iota/iota-sdk/transactions";
 import useTx from "./useTx";
 import { useAppStore } from "@/stores/app";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 type ActionLabel = "Stake" | "Unstake" | "Transfer";
+type ExecuteOptions = { dryRun?: boolean };
 
 export const useSend = () => {
   const account = useCurrentAccount();
+  const client = useIotaClient();
   const { network } = useAppStore();
   const { mutateAsync: signAndExecute } = useSignAndExecuteTransaction();
   const tx = useTx();
@@ -21,19 +24,24 @@ export const useSend = () => {
     return account.address;
   }
 
-  async function estimate(txBuilder: () => Promise<Transaction>) {
-    const sender = requireAccount();
-    const built = await txBuilder();
-    return tx.estimateGas({ tx: built, sender });
-  }
-
   /** 統一帶動作名稱的 execute：自動切換成功/失敗提示文案 */
   async function executeLabeled(
     action: ActionLabel,
-    txBuilder: () => Promise<Transaction>
+    txBuilder: (sender: string) => Promise<Transaction>,
+    options?: ExecuteOptions
   ) {
-    requireAccount();
-    const built = await txBuilder();
+    const sender = requireAccount();
+    const built = await txBuilder(sender);
+
+    if (options?.dryRun) {
+      const unsignedTxBytesBase64 = await built.build({ client });
+      const dryRun = await client.dryRunTransactionBlock({
+        transactionBlock: unsignedTxBytesBase64,
+      });
+      console.log(`[dry-run][${action}] executed`, dryRun);
+      toast.success("Dry-run completed, check console for details.");
+      return;
+    }
 
     return await signAndExecute(
       {
@@ -78,124 +86,90 @@ export const useSend = () => {
     sendAllNonIota: async ({
       coinType,
       recipient,
+      dryRun,
     }: {
       coinType: string;
       recipient: string;
+      dryRun?: boolean;
     }) =>
-      executeLabeled("Transfer", () =>
-        tx.buildNonIotaSendAllPTB({
-          owner: requireAccount(),
-          coinType,
-          recipient,
-        })
+      executeLabeled(
+        "Transfer",
+        (sender) => tx.payAllToken(sender, recipient, coinType),
+        { dryRun }
       ),
 
-    payAllIota: async ({ recipient }: { recipient: string }) =>
-      executeLabeled("Transfer", () =>
-        tx.buildIotaPayAllLikePTB({ owner: requireAccount(), recipient })
-      ),
+    payAllIota: async ({
+      recipient,
+      dryRun,
+    }: {
+      recipient: string;
+      dryRun?: boolean;
+    }) =>
+      executeLabeled("Transfer", (sender) => tx.payAllIota(sender, recipient), {
+        dryRun,
+      }),
 
     sendNonIota: async ({
       coinType,
       recipient,
       amount,
+      dryRun,
     }: {
       coinType: string;
       recipient: string;
       amount: bigint | number;
+      dryRun?: boolean;
     }) =>
-      executeLabeled("Transfer", () =>
-        tx.buildNonIotaPayPTB({
-          owner: requireAccount(),
-          coinType,
-          recipient,
-          amount,
-        })
+      executeLabeled(
+        "Transfer",
+        (sender) => tx.payTokenAmount(sender, recipient, coinType, amount),
+        { dryRun }
       ),
 
     sendIota: async ({
       recipient,
       amount,
+      dryRun,
     }: {
       recipient: string;
       amount: bigint | number;
+      dryRun?: boolean;
     }) =>
-      executeLabeled("Transfer", () =>
-        tx.buildIotaPayPTB({ owner: requireAccount(), recipient, amount })
+      executeLabeled(
+        "Transfer",
+        (sender) => tx.payIotaAmount(sender, recipient, amount),
+        { dryRun }
       ),
 
     // ----- NativePool: stake / unstake -----
     /** 一鍵：從 IOTA 拆出 amount 後質押 */
-    stakeWithSplit: async ({ amount }: { amount: bigint | number }) =>
-      executeLabeled("Stake", () =>
-        tx.buildStakeWithSplitPTB({ owner: requireAccount(), amount })
-      ),
+    stakeWithSplit: async ({
+      amount,
+      dryRun,
+    }: {
+      amount: bigint | number;
+      dryRun?: boolean;
+    }) => {
+      return executeLabeled(
+        "Stake",
+        (sender) => tx.buildStakeWithSplitPTB({ owner: sender, amount }),
+        { dryRun }
+      );
+    },
 
     /** 拆出指定 amount 的 CERT 後「部分」解質押 */
-    unstakeWithSplit: async ({ amount }: { amount: bigint | number }) =>
-      executeLabeled("Unstake", () =>
-        tx.buildUnstakeWithSplitPTB({ owner: requireAccount(), amount })
-      ),
-
-    // ========= 只估 gas =========
-    estimateSendAllNonIota: async ({
-      coinType,
-      recipient,
-    }: {
-      coinType: string;
-      recipient: string;
-    }) =>
-      estimate(() =>
-        tx.buildNonIotaSendAllPTB({
-          owner: requireAccount(),
-          coinType,
-          recipient,
-        })
-      ),
-
-    estimatePayAllIota: async ({ recipient }: { recipient: string }) =>
-      estimate(() =>
-        tx.buildIotaPayAllLikePTB({ owner: requireAccount(), recipient })
-      ),
-
-    estimateSendNonIota: async ({
-      coinType,
-      recipient,
+    unstakeWithSplit: async ({
       amount,
+      dryRun,
     }: {
-      coinType: string;
-      recipient: string;
       amount: bigint | number;
-    }) =>
-      estimate(() =>
-        tx.buildNonIotaPayPTB({
-          owner: requireAccount(),
-          coinType,
-          recipient,
-          amount,
-        })
-      ),
-
-    estimateSendIota: async ({
-      recipient,
-      amount,
-    }: {
-      recipient: string;
-      amount: bigint | number;
-    }) =>
-      estimate(() =>
-        tx.buildIotaPayPTB({ owner: requireAccount(), recipient, amount })
-      ),
-
-    // ----- NativePool: gas estimate -----
-    estimateStakeWithSplit: async ({ amount }: { amount: bigint | number }) =>
-      estimate(() =>
-        tx.buildStakeWithSplitPTB({ owner: requireAccount(), amount })
-      ),
-
-    estimateUnstakeWithSplit: async ({ amount }: { amount: bigint | number }) =>
-      estimate(() =>
-        tx.buildUnstakeWithSplitPTB({ owner: requireAccount(), amount })
-      ),
+      dryRun?: boolean;
+    }) => {
+      return executeLabeled(
+        "Unstake",
+        (sender) => tx.buildUnstakeWithSplitPTB({ owner: sender, amount }),
+        { dryRun }
+      );
+    },
   };
 };
