@@ -42,7 +42,7 @@ export const Hero = () => {
       </Group>
       {isConnected && (
         <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
-          Using wallet by MetaMask, designed and developed by Liquidlink.
+          Experience seamless access with a MetaMask-powered wallet, crafted by LiquidLink.
         </p>
       )}
     </>
