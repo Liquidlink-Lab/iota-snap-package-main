@@ -2,7 +2,6 @@
 
 This project is licensed under the [Apache 2.0 License](./LICENSE).
 
-
 ### Process
 
 - install MetaMask Flask DEVELOPMENT BUILD
@@ -10,10 +9,10 @@ This project is licensed under the [Apache 2.0 License](./LICENSE).
 - cd frontend
 - npm or yarn install
 - Connect with MetaMask Flask
-- Manage your Iota wallet with metamask
-
+- Manage your IOTA wallet with metamask
 
 ### Feature
-- Receive Iota
-- Send Iota
+
+- Receive IOTA
+- Send IOTA
 - Sign message

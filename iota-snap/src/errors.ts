@@ -1,5 +1,5 @@
 /**
- * Error handling for Iota Snap wallet
+ * Error handling for IOTA Snap wallet
  */
 
 export class IotaSnapError extends Error {
@@ -11,7 +11,7 @@ export class IotaSnapError extends Error {
 
 export class IotaSnapNotInstalledError extends IotaSnapError {
   constructor() {
-    super("Iota Snap is not installed");
+    super("IOTA Snap is not installed");
     this.name = "IotaSnapNotInstalledError";
   }
 }

@@ -1,5 +1,5 @@
 /**
- * Iota Snap wallet icon
+ * IOTA Snap wallet icon
  */
 
 export const ICON: `data:image/svg+xml;base64,${string}` =

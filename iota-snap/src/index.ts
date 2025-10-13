@@ -192,7 +192,7 @@ export async function signAndExecuteTransaction(
 }
 
 export class IotaSnapWallet implements Wallet {
-  static NAME = "Iota MetaMask Snap";
+  static NAME = "IOTA MetaMask Snap";
   #connecting: boolean;
   #connected: boolean;
 
@@ -327,7 +327,7 @@ export class IotaSnapWallet implements Wallet {
   ) => {
     if (!this.#provider) {
       throw new Error(
-        "Not connected: Please connect to MetaMask Iota Snap before signing a personal message."
+        "Not connected: Please connect to MetaMask IOTA Snap before signing a personal message."
       );
     }
     return signPersonalMessage(this.#provider, messageInput);
@@ -336,7 +336,7 @@ export class IotaSnapWallet implements Wallet {
   #signMessage: IotaSignPersonalMessageMethod = async (messageInput) => {
     if (!this.#provider) {
       throw new Error(
-        "Not connected: Please connect to MetaMask Iota Snap before signing a message."
+        "Not connected: Please connect to MetaMask IOTA Snap before signing a message."
       );
     }
     return signMessage(this.#provider, messageInput);
@@ -345,7 +345,7 @@ export class IotaSnapWallet implements Wallet {
   #signTransaction: IotaSignTransactionMethod = async (transactionInput) => {
     if (!this.#provider) {
       throw new Error(
-        "Not connected: Please connect to MetaMask Iota Snap before signing a transaction block."
+        "Not connected: Please connect to MetaMask IOTA Snap before signing a transaction block."
       );
     }
     return signTransaction(this.#provider, transactionInput);
@@ -356,7 +356,7 @@ export class IotaSnapWallet implements Wallet {
   ) => {
     if (!this.#provider) {
       throw new Error(
-        "Not connected: Please connect to MetaMask Iota Snap before signing and executing a transaction block."
+        "Not connected: Please connect to MetaMask IOTA Snap before signing and executing a transaction block."
       );
     }
     return signAndExecuteTransaction(this.#provider, transactionInput);

@@ -6,32 +6,21 @@ IOTA Snap is an extension for MetaMask that enables users to seamlessly manage t
 
 ## Guide
 
-- npm install iota-snap-for-metamask
-- npm install @iota/wallet-standard
-- import { registerIotaSnapWallet } from "iota-snap-for-metamask";
-  import { getWallets } from "@iota/wallet-standard";
-  registerIotaSnapWallet(getWallets())
+Install:
 
-- index.ts
-  import { metaMaskAvailable } from "iota-snap-for-metamask";
-    const [flaskInstalled, setFlaskInstalled] = useState<boolean>(false);
+```
+npm install iota-snap-for-metamask
+```
 
-    useEffect(() => {
-    const checkMetaMaskAndRegisterWallets = async () => {
-      try {
-        const metaMaskState = await metaMaskAvailable();
-        setFlaskInstalled(metaMaskState.available);
-        // Register Iota Mate Wallet
-      } catch (e) {
-        setFlaskInstalled(false);
-        console.error(e);
-      }
-    };
+In client side component:
 
-    checkMetaMaskAndRegisterWallets();
-  }, []);
+```
+"use client";
 
+import { registerIotaSnapWallet } from "iota-snap-for-metamask";
 
+registerIotaSnapWallet();
+```
 
 ## Features
 
@@ -62,4 +51,3 @@ IOTA Snap is an extension for MetaMask that enables users to seamlessly manage t
 
 - [SDK NPM package](https://www.npmjs.com/package/iota-snap-for-metamask)
 - [GitHub repository](https://github.com/Liquidlink-Lab/iota-snap-package-main/tree/main)
-
