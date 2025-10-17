@@ -35,8 +35,8 @@ const useTokens = ({ address }: { address: string }) => {
   const tokens = rows
     .map((r, i) => {
       const meta = metaQueries[i]?.data ?? null;
-      const decimals = meta?.decimals ?? 0;
-      const balance = formatUnits(r.totalBalance);
+      const decimals = Number(meta?.decimals ?? 0);
+      const balance = formatUnits(r.totalBalance, decimals);
       return {
         coinType: r.coinType,
         symbol: meta?.symbol,
@@ -53,10 +53,16 @@ const useTokens = ({ address }: { address: string }) => {
 
 export default useTokens;
 
-function formatUnits(amount: string, decimals = 9) {
+function formatUnits(amount: string, decimals: number) {
   if (amount === "0") return "0";
+  if (decimals === 0) {
+    return BigInt(amount).toString();
+  }
+
   const s = amount.padStart(decimals + 1, "0");
-  const intPart = s.slice(0, -decimals);
+  const rawIntPart = s.slice(0, -decimals);
+  const intPart = rawIntPart === "" ? "0" : rawIntPart;
   let fracPart = s.slice(-decimals).replace(/0+$/, "");
+
   return fracPart ? `${intPart}.${fracPart}` : intPart;
 }
