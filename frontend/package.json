@@ -12,7 +12,7 @@
     "@iota/dapp-kit": "^0.5.3",
     "@iota/iota-sdk": "^1.6.1",
     "@iota/wallet-standard": "^0.2.15",
-    "@liquidlink-lab/iota-snap-for-metamask": "^1.8.0",
+    "@liquidlink-lab/iota-snap-for-metamask": "^1.9.0",
     "@mantine/core": "^8.3.1",
     "@mantine/hooks": "^8.3.1",
     "@tanstack/react-query": "^5.90.1",
