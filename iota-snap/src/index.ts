@@ -39,7 +39,7 @@ export type { MetaMaskStatus, MetaMaskProviderInfo } from "./metamask";
 
 // export const SNAP_ORIGIN = "local:http://localhost:5050";
 export const SNAP_ORIGIN = "npm:@liquidlink-lab/iota-metamask-snap";
-export const SNAP_VERSION = "^0.0.14";
+export const SNAP_VERSION = "~0.0.14";
 
 type IotaSignMessageFeature = {
   "iota:signMessage": {
