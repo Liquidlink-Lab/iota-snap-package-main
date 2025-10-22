@@ -7,7 +7,7 @@
         "@iota/dapp-kit": "^0.5.3",
         "@iota/iota-sdk": "^1.6.1",
         "@iota/wallet-standard": "^0.2.15",
-        "@liquidlink-lab/iota-snap-for-metamask": "^1.9.0",
+        "@liquidlink-lab/iota-snap-for-metamask": "^1.9.1",
         "@mantine/core": "^8.3.1",
         "@mantine/hooks": "^8.3.1",
         "@tanstack/react-query": "^5.90.1",
@@ -171,7 +171,7 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
-    "@liquidlink-lab/iota-snap-for-metamask": ["@liquidlink-lab/iota-snap-for-metamask@1.9.0", "", { "dependencies": { "@iota/iota-sdk": "^1.6.1", "@iota/wallet-standard": "^0.2.15", "@metamask/detect-provider": "^2.0.0", "@metamask/providers": "^22.1.1" } }, "sha512-b7ajFrjsfMOENuOwrj4xW/4Qk1C0zcgluwKx5QRQEW0xUozAlLZwiEN42ADyMuvOzftB2PN9DfLjU3qXRdenoA=="],
+    "@liquidlink-lab/iota-snap-for-metamask": ["@liquidlink-lab/iota-snap-for-metamask@1.9.1", "", { "dependencies": { "@iota/iota-sdk": "^1.6.1", "@iota/wallet-standard": "^0.2.15", "@metamask/detect-provider": "^2.0.0", "@metamask/providers": "^22.1.1" } }, "sha512-hD4wDDkV+wp/FyGcDty7/AbXSP7msqwZu0yA+tRfvkeSjUonbjb0zDWFWrxVOYgITZi7rsH+eOg7h4CghtOOTQ=="],
 
     "@mantine/core": ["@mantine/core@8.3.5", "", { "dependencies": { "@floating-ui/react": "^0.27.16", "clsx": "^2.1.1", "react-number-format": "^5.4.4", "react-remove-scroll": "^2.7.1", "react-textarea-autosize": "8.5.9", "type-fest": "^4.41.0" }, "peerDependencies": { "@mantine/hooks": "8.3.5", "react": "^18.x || ^19.x", "react-dom": "^18.x || ^19.x" } }, "sha512-PdVNLMgOS2vFhOujRi6/VC9ic8w3UDyKX7ftwDeJ7yQT8CiepUxfbWWYpVpnq23bdWh/7fIT2Pn1EY8r8GOk7g=="],
 
