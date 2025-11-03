@@ -44,8 +44,17 @@ const useTx = () => {
       a.balance === b.balance ? 0 : a.balance < b.balance ? 1 : -1
     );
 
-    return coins.map(({ balance, ...rest }) => rest);
+    return coins;
   }
+
+  const toObjectRef = (coin: ObjectRef & { balance: bigint }): ObjectRef => ({
+    objectId: coin.objectId,
+    version: coin.version,
+    digest: coin.digest,
+  });
+
+  const toObjectRefs = (coins: (ObjectRef & { balance: bigint })[]) =>
+    coins.map(toObjectRef);
 
   /** 查餘額（最小單位） */
   async function getBalance(owner: string, coinType: string): Promise<bigint> {
@@ -59,7 +68,7 @@ const useTx = () => {
     if (gasCoins.length === 0) {
       throw new Error("No available IOTA to pay gas.");
     }
-    tx.setGasPayment(gasCoins);
+    tx.setGasPayment(toObjectRefs(gasCoins));
   }
 
   /** Sweep：把全部 IOTA（扣手續費）給 recipient */
@@ -74,7 +83,7 @@ const useTx = () => {
     tx.setSender(sender);
 
     // 1) Gas 只放一顆
-    tx.setGasPayment([primary]);
+    tx.setGasPayment([toObjectRef(primary)]);
 
     // 2) 顯式把所有原生幣合併到 gas（確保 sweep 的語意）
     if (rest.length > 0) {
@@ -113,7 +122,7 @@ const useTx = () => {
     tx.setSender(sender);
 
     // 1) 只放主 coin 作為 gas
-    tx.setGasPayment([primary]);
+    tx.setGasPayment([toObjectRef(primary)]);
 
     // 2) 先把其他原生幣合併到 gas，確保可拆出 want
     if (rest.length > 0) {
@@ -227,8 +236,11 @@ const useTx = () => {
     const amt = BigInt(amount);
     if (amt <= 0n) throw new Error("Amount must be greater than 0.");
 
-    // 1) 檢查 base 總餘額
-    const totalBase = await getBalance(owner, BASE_TOKEN_TYPE);
+    // 1) 取得 base coins 並檢查總餘額
+    const baseRefs = await getCoins(owner, BASE_TOKEN_TYPE);
+    if (baseRefs.length === 0) throw new Error("No base coins available.");
+
+    const totalBase = baseRefs.reduce((sum, coin) => sum + coin.balance, 0n);
     if (totalBase < amt + MIN_GAS_BUDGET) {
       throw new Error(
         `Not enough IOTA to cover stake amount plus minimum gas reserve (0.001 IOTA)`
@@ -236,16 +248,20 @@ const useTx = () => {
     }
 
     // 2) 準備所有 base coins：最大顆作 gas，其餘合併到 tx.gas
-    const baseRefs = await getCoins(owner, BASE_TOKEN_TYPE);
-    if (baseRefs.length === 0) throw new Error("No base coins available.");
-
     const [primary, ...rest] = baseRefs;
+    const primaryBalance = primary.balance;
 
     const tx = new Transaction();
     tx.setSender(owner);
 
     // Gas 只放一顆（ObjectRef），接下來對 gas 的任何操作一律用 tx.gas
-    tx.setGasPayment([primary]);
+    tx.setGasPayment([
+      {
+        objectId: primary.objectId,
+        digest: primary.digest,
+        version: primary.version,
+      },
+    ]);
 
     // 合併其餘 base coins 到 tx.gas
     if (rest.length > 0) {
@@ -263,8 +279,15 @@ const useTx = () => {
     const remainder = totalBase - amt;
     const candidateBudget =
       remainder > MAX_GAS_BUDGET ? MAX_GAS_BUDGET : remainder;
-    if (candidateBudget >= MIN_GAS_BUDGET) {
-      tx.setGasBudget(candidateBudget);
+    const safeBudget =
+      candidateBudget > primaryBalance ? primaryBalance : candidateBudget;
+    if (safeBudget < MIN_GAS_BUDGET) {
+      throw new Error(
+        "Insufficient IOTA remaining in the gas coin to satisfy the minimum gas reserve after staking."
+      );
+    }
+    if (safeBudget >= MIN_GAS_BUDGET) {
+      tx.setGasBudget(safeBudget);
     }
 
     // 5) 呼叫 stake
