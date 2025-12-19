@@ -1,6 +1,5 @@
 import {
   useCurrentAccount,
-  useIotaClient,
   useSignAndExecuteTransaction,
 } from "@iota/dapp-kit";
 import type { Transaction } from "@iota/iota-sdk/transactions";
@@ -8,14 +7,15 @@ import useTx from "./useTx";
 import { useAppStore } from "@/stores/app";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { getFullnodeUrl, IotaClient } from "@iota/iota-sdk/client";
 
 type ActionLabel = "Stake" | "Unstake" | "Transfer";
 type ExecuteOptions = { dryRun?: boolean };
 
 export const useSend = () => {
   const account = useCurrentAccount();
-  const client = useIotaClient();
   const { network } = useAppStore();
+  const client = new IotaClient({url: getFullnodeUrl(network)});
   const { mutateAsync: signAndExecute } = useSignAndExecuteTransaction();
   const tx = useTx();
 
@@ -45,7 +45,7 @@ export const useSend = () => {
 
     return await signAndExecute(
       {
-        transaction: built,
+        transaction: built as unknown as Parameters<typeof signAndExecute>[0]["transaction"],
         chain: `iota:${network}`,
       },
       {
